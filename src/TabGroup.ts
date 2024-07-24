@@ -1,4 +1,4 @@
-import { ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, HTMLElementWithChildren, IElementWithChildrenComponent, INodeComponent, NullableString } from "@vanilla-ts/core";
+import { ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_EVENT_INIT_DICT, HTMLElementWithChildren, IElementWithChildrenComponent, INodeComponent, NullableString } from "@vanilla-ts/core";
 import { Button, Div, P, Span } from "@vanilla-ts/dom";
 
 
@@ -41,12 +41,23 @@ export enum TabGroupAppearance {
 /**
  * Custom 'tab' event for tab groups.
  */
-export class TabEvent<D extends object = {
+export class TabEvent extends ACustomComponentEvent<"tab", TabGroup, {
     /** The tab which was activated / deactivated. */
     Tab: Tab;
     /** `true`, if the tab was activated, otherwise`false`. */
     Active: boolean;
-}> extends ACustomComponentEvent<"tab", TabGroup, D> { }
+}> {
+    /**
+     * Create Tab event.
+     * @param sender The event emitter (always `TabGroup`).
+     * @param tab The tab which is activated/deactivated.
+     * @param active `true`, if the tab is was activated, otherwise `false`.
+     * @param customEventInitDict Optional event properties.
+     */
+    constructor(sender: TabGroup, tab: Tab, active: boolean, customEventInitDict: EventInit = DEFAULT_EVENT_INIT_DICT) {
+        super("tab", sender, { Tab: tab, Active: active }, customEventInitDict); // eslint-disable-line jsdoc/require-jsdoc
+    }
+}
 
 /**
  * Additional event(s) for `Tab`.
@@ -57,6 +68,7 @@ export interface TabGroupEventMap extends HTMLElementEventMap {
 }
 
 /**
+ * Component for displaying tabs.\
  * __Note__: The operations `append()`, `insert()`, `remove()`, `extract()`, `moveTo()` and
  * `moveToAt()` only perform minimal checks to ensure that the given tabs are qualified for the
  * respective operation, e.g. they belong to no other tab group or to this tab group. Since the UI
@@ -90,15 +102,6 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
         return result.substring(0, result.length - 1);
     }
 
-    /** @inheritdoc */
-    public override disabled(disabled: boolean): this {
-        for (const tab of this.tabs) {
-            tab.disabled(disabled);
-        }
-        super.disabled(disabled);
-        return this;
-    }
-
     /**
      * Get the tabs of this tab group (the array is always a copy).
      */
@@ -130,7 +133,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
         }
         for (const tab of this.tabs) {
             if (tab.Active) {
-                this._dom.dispatchEvent(new TabEvent("tab", this, { Tab: tab, Active: false })); // eslint-disable-line jsdoc/require-jsdoc
+                this.emit(new TabEvent(this, tab, false)); // eslint-disable-line jsdoc/require-jsdoc
             }
         }
         this.activeTab = tab;
@@ -139,7 +142,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
             : undefined;
         this.tabContent.remove();
         this.tabContent.append(tab.Content);
-        this._dom.dispatchEvent(new TabEvent("tab", this, { Tab: tab, Active: true })); // eslint-disable-line jsdoc/require-jsdoc
+        this.emit(new TabEvent(this, tab, true)); // eslint-disable-line jsdoc/require-jsdoc
         return this;
     }
 
@@ -590,22 +593,22 @@ class TabContentContainer extends Div {
     /** @inheritdoc */
     override onBeforeUnmount(): void {
         super.onBeforeUnmount();
-        for (const child of this._children) { child.onBeforeUnmount(); }
+        for (const child of this.Children) { child.onBeforeUnmount(); }
     }
     /** @inheritdoc */
     override onDidUnmount(): void {
         super.onDidUnmount();
-        for (const child of this._children) { child.onDidUnmount(); }
+        for (const child of this.Children) { child.onDidUnmount(); }
     }
     /** @inheritdoc */
     override onBeforeMount(parent: IElementWithChildrenComponent<HTMLElementWithChildren>): void {
         super.onBeforeMount(parent);
-        for (const child of this._children) { child.onBeforeMount(this); }
+        for (const child of this.Children) { child.onBeforeMount(this); }
     }
     /** @inheritdoc */
     override onDidMount(parent: IElementWithChildrenComponent<HTMLElementWithChildren>): void {
         super.onDidMount(parent);
-        for (const child of this._children) { child.onDidMount(this); }
+        for (const child of this.Children) { child.onDidMount(this); }
     }
 }
 
@@ -614,7 +617,7 @@ class TabContentContainer extends Div {
  * separate non-mounted tab content container which both will be used, mounted and handled by
  * `TabGroup`.
  */
-export class Tab extends AElementComponentWithInternalUI<Div> {
+export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap> {
     #cpHeader?: INodeComponent<Node>[] | string;
     #cpContent?: INodeComponent<Node>[] | string;
     #cpCloseBtn: boolean;
@@ -704,8 +707,15 @@ export class Tab extends AElementComponentWithInternalUI<Div> {
 
     /** @inheritdoc */
     public override disabled(disabled: boolean): this {
-        this.contentContainer.disabled(disabled);
         super.disabled(disabled);
+        this.contentContainer.disabled(disabled);
+        return this;
+    }
+
+    /** @inheritdoc */
+    public override parentDisabled(disabled: boolean): this {
+        super.parentDisabled(disabled);
+        this.contentContainer.parentDisabled(disabled);
         return this;
     }
 
@@ -835,7 +845,7 @@ export class Tab extends AElementComponentWithInternalUI<Div> {
     }
 
     /** @inheritdoc */
-    public override onDidMount(parent: IElementWithChildrenComponent<HTMLElementWithChildren>): void {
+    public override onDidMount(parent: IElementWithChildrenComponent<HTMLElementWithChildren, EventMap>): void {
         super.onDidMount(parent);
         this.tabGroup = parent.Parent?.Parent instanceof TabGroup
             ? parent.Parent.Parent

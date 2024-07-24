@@ -6,7 +6,7 @@ const $ = new (mixinComponentFactories(
     CSSClassNameFactory,
     LabeledContainerFactory,
     PFactory)
-)("vts", true);
+)("vts", false);
 
 let lc: LabeledContainer;
 let p: P;

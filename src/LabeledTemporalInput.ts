@@ -1,4 +1,4 @@
-import { ComponentFactory } from "@vanilla-ts/core";
+import { ComponentFactory, Phrase } from "@vanilla-ts/core";
 import { TemporalInput, TemporalType } from "@vanilla-ts/dom";
 import { LabelAlignment, LabelPosition } from "./LabeledComponent.js";
 import { LabeledInputComponent } from "./LabeledInputComponent.js";
@@ -7,46 +7,44 @@ import { LabeledInputComponent } from "./LabeledInputComponent.js";
 /**
  * Labeled temporal input component.
  */
-export class LabeledTemporalInput extends LabeledInputComponent<TemporalInput> {
+export class LabeledTemporalInput<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledInputComponent<TemporalInput, EventMap> {
     /**
-     * Builds the labeled temporal input component.
-     * @param labelText The text for the label.
-     * @param temporalType The type (attribute) of the temporal input.
-     * @param id The id (attribute) of the temporal input.
-     * @param value The value of the temporal input.
-     * @param name The name (attribute) of the temporal input.
+     * Create LabeledTemporalInput component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param temporalType The type (attribute) of the temporal input element.
+     * @param id The id (attribute) of the temporal input element.
+     * @param value The value of the temporal input element.
+     * @param name The name (attribute) of the temporal input element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label focuses
-     *   the temporal input, if `labelAction` is `false`, clicking on the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
+     *   the temporal input element, if `labelAction` is `false`, clicking on the label does
+     *   nothing.
      */
-    constructor(labelText: string, temporalType: TemporalType, id?: string, value?: string, name?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
-        super(labelText, id, labelAction, lblPosition, lblAlignment);
-        this.append(
-            this.label,
-            this.input = new TemporalInput(temporalType, id, value, name)
-        );
+    constructor(labelPhrase: Phrase | Phrase[], temporalType: TemporalType, id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean) {
+        super(labelPhrase, id, lblPosition, lblAlignment, labelAction);
+        this.ui.append(this.component = new TemporalInput(temporalType, id, value, name));
     }
 
     /**
-     * Alternative property to 'Input' for accessing the contained temporal input with a descriptive
-     * name.
+     * Get TemporalInput component of this component. Equivalent to `Component`, just with a more
+     * descriptive name.
      */
     public get TemporalInput(): TemporalInput {
-        return this.input;
+        return this.component;
     }
 
     /**
      * Get/set the setp attribute value of the component (re-exported for easier direct access).
      */
     public get Step(): string {
-        return this.input.Step;
+        return this.component.Step;
     }
     /** @inheritdoc */
     public set Step(v: string) {
-        this.input.Step = v;
+        this.component.Step = v;
     }
 
     /**
@@ -55,7 +53,7 @@ export class LabeledTemporalInput extends LabeledInputComponent<TemporalInput> {
      * @returns This instance.
      */
     public step(step: string): this {
-        this.input.step(step);
+        this.component.step(step);
         return this;
     }
 
@@ -67,7 +65,7 @@ export class LabeledTemporalInput extends LabeledInputComponent<TemporalInput> {
      * @returns This instance.
      */
     public stepUp(n?: number): this {
-        this.input.stepUp(n);
+        this.component.stepUp(n);
         return this;
     }
 
@@ -79,9 +77,16 @@ export class LabeledTemporalInput extends LabeledInputComponent<TemporalInput> {
      * @returns This instance.
      */
     public stepDown(n?: number): this {
-        this.input.stepDown(n);
+        this.component.stepDown(n);
         return this;
     }
+
+    /** @inheritdoc */
+    // protected override buildUI(id?: string, value?: string, name?: string, labelAction?: boolean): this {
+    //     super.buildUI(id, value, name, labelAction);
+    //     // this.ui.append(this.component = new TemporalInput(temporalType, id, value, name))
+    //     return this;
+    // }
 }
 
 /**
@@ -90,21 +95,22 @@ export class LabeledTemporalInput extends LabeledInputComponent<TemporalInput> {
 export class LabeledTemporalInputFactory<T> extends ComponentFactory<LabeledTemporalInput> {
     /**
      * Create, set up and return LabeledTemporalInput component.
-     * @param labelText The text for the label.
-     * @param temporalType The type (attribute) of the temporal input.
-     * @param id The id (attribute) of the temporal input.
-     * @param value The value of the temporal input.
-     * @param name The name (attribute) of the temporal input.
+     * @param labelPhrase The phrasing content for the label.
+     * @param temporalType The type (attribute) of the temporal input element.
+     * @param id The id (attribute) of the temporal input element.
+     * @param value The value of the temporal input element.
+     * @param name The name (attribute) of the temporal input element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label focuses
-     *   the temporal input, if `labelAction` is `false`, clicking on the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
+     *   the temporal input element, if `labelAction` is `false`, clicking on the label does
+     *   nothing.
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns LabeledTemporalInput component.
      */
-    public labeledTemporalInput(labelText: string, temporalType: TemporalType, id?: string, value?: string, name?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledTemporalInput {
-        return this.setupComponent(new LabeledTemporalInput(labelText, temporalType, id, value, name, labelAction, lblPosition, lblAlignment), data);
+    public labeledTemporalInput(labelPhrase: Phrase | Phrase[], temporalType: TemporalType, id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean, data?: T): LabeledTemporalInput {
+        return this.setupComponent(new LabeledTemporalInput(labelPhrase, temporalType, id, value, name, lblPosition, lblAlignment, labelAction), data);
     }
 }

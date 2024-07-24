@@ -1,4 +1,4 @@
-import { ElementComponentWithChildren, HTMLElementWithChildren, HTMLElementWithChildrenTagName, NullableString } from "@vanilla-ts/core";
+import { AElementComponentWithInternalUI, HTMLElementWithChildren, IElementComponent, IElementWithChildrenComponent, Phrase, Phrases } from "@vanilla-ts/core";
 import { Label, Span } from "@vanilla-ts/dom";
 
 /**
@@ -6,9 +6,9 @@ import { Label, Span } from "@vanilla-ts/dom";
  */
 export enum LabelPosition {
     TOP = 1, // 1 because of `if (LabelPosition) ...`
-    RIGHT,
+    END,
     BOTTOM,
-    LEFT
+    START
 }
 
 /**
@@ -21,27 +21,51 @@ export enum LabelAlignment {
 }
 
 /**
- * Abstract class for building labeled components that have a descriptive label/caption.
+ * Abstract base class for building labeled components that have a descriptive label or span
+ * element. The label element itself is a compoment (`Label` or `Span`) so it can be used to display
+ * styled text with, for example, `Span`, `Em` and other components appended to it.
  */
-export abstract class LabeledComponent<L extends (Label | Span), EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends ElementComponentWithChildren<HTMLElementWithChildren, EventMap> {
+export abstract class LabeledComponent<L extends (Label | Span), C extends IElementComponent<HTMLElement>, EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<IElementWithChildrenComponent<HTMLElementWithChildren>, EventMap> {
+    #initialized = false;
     protected label: L;
+    // This member exists only to temporarily store the value given to the contructor to be
+    // available in `this.buildUI()`. It will be set to `undefined` again after `initialize()`.
+    #labelPhrase?: Phrase | Phrase[];
     protected lblPosition: LabelPosition;
     protected lblAlignment: LabelAlignment;
+    protected component: C;
 
     /**
-     * Builds a labeled component.
-     * @param tagName Tag name of this (container) HTML element.
+     * Create LabeledComponent component.
+     * @param labelPhrase The phrasing content for the label.
      * @param lblPosition The position of the label.
      * @param lblAlignment The alignment of the label.
-     * @param is Support creating customized built-in elements:
-     * - https://developer.mozilla.org/en-US/docs/Web/Web_Components#custom_elements
-     * - https://html.spec.whatwg.org/multipage/custom-elements.html#custom-elements-customized-builtin-example.
-     * Currently only for completeness, otherwise not used.
      */
-    constructor(tagName: HTMLElementWithChildrenTagName, lblPosition: LabelPosition = LabelPosition.TOP, lblAlignment: LabelAlignment = LabelAlignment.START, is?: string) {
-        super(tagName, is);
-        this.labelPosition(lblPosition)
-            .labelAlignment(lblAlignment);
+    constructor(labelPhrase: Phrase | Phrase[], lblPosition: LabelPosition = LabelPosition.TOP, lblAlignment: LabelAlignment = LabelAlignment.START) {
+        super();
+        this.#labelPhrase = labelPhrase;
+        this.lblPosition = lblPosition;
+        this.lblAlignment = lblAlignment;
+    }
+
+    /** @inheritdoc */
+    protected override initialize(mountUI?: boolean, ...args: Parameters<typeof this.buildUI>): this {
+        super.initialize(mountUI, ...args) // eslint-disable-line @typescript-eslint/no-unsafe-argument
+            .labelPosition(this.lblPosition)
+            .labelAlignment(this.lblAlignment);
+        Array.isArray(this.#labelPhrase)
+            ? this.label.phrase(...this.#labelPhrase)
+            : this.label.phrase(this.#labelPhrase!);
+        this.#labelPhrase = undefined;
+        this.#initialized = true;
+        return this;
+    }
+
+    /**
+     * Get component that is enclosed.
+     */
+    public get Component(): C {
+        return this.component;
     }
 
     /**
@@ -52,23 +76,22 @@ export abstract class LabeledComponent<L extends (Label | Span), EventMap extend
     }
 
     /**
-     * Get/set the caption of the labeled component.
+     * Set the phrasing content of the components label. __The setter `LabelPhrase` here is an alias
+     * for the property `this.Label.Phrase`.__
      */
-    public get Caption(): NullableString {
-        return this.label.Text;
-    }
-    /** @inheritdoc */
-    public set Caption(v: NullableString) {
-        this.label.Text = v;
+    public set LabelPhrase(phrase: Phrase | Phrases) {
+        this.label.Phrase = phrase;
     }
 
     /**
-     * Set the caption of the labeled component.
-     * @param v The caption to be set.
+     * Set the phrasing content of the the components label. __The function `labelPhrase()` here is
+     * an alias for the function `this.Label.phrase()` but it returns _this_ instance instead of the
+     * 'Label' instance.__
+     * @param phrase The phrasing content to be set for the label.
      * @returns This instance.
      */
-    public caption(v: NullableString): this {
-        this.label.Text = v;
+    public labelPhrase(...phrase: Phrase[]): this {
+        this.label.phrase(...phrase);
         return this;
     }
 
@@ -89,23 +112,27 @@ export abstract class LabeledComponent<L extends (Label | Span), EventMap extend
      * @returns This instance.
      */
     public labelPosition(v: LabelPosition): this {
-        if (v === this.LabelPosition) {
+        if (this.#initialized && v === this.lblPosition) {
             return this;
         }
         this.lblPosition = v;
-        this.removeClass("top", "right", "bottom", "left");
+        this.removeClass("p-top", "p-end", "p-bottom", "p-start");
         switch (v) {
             case LabelPosition.TOP:
-                this.addClass("top");
+                this.ui.Children[0] !== this.label ? this.ui.insert(0, this.label) : undefined;
+                this.addClass("p-top");
                 break;
-            case LabelPosition.RIGHT:
-                this.addClass("right");
+            case LabelPosition.END:
+                this.ui.Children[1] !== this.label ? this.ui.append(this.label) : undefined;
+                this.addClass("p-end");
                 break;
             case LabelPosition.BOTTOM:
-                this.addClass("bottom");
+                this.ui.Children[1] !== this.label ? this.ui.append(this.label) : undefined;
+                this.addClass("p-bottom");
                 break;
-            case LabelPosition.LEFT:
-                this.addClass("left");
+            case LabelPosition.START:
+                this.ui.Children[0] !== this.label ? this.ui.insert(0, this.label) : undefined;
+                this.addClass("p-start");
                 break;
         }
         return this;
@@ -128,20 +155,20 @@ export abstract class LabeledComponent<L extends (Label | Span), EventMap extend
      * @returns This instance.
      */
     public labelAlignment(v: LabelAlignment): this {
-        if (v === this.LabelAlignment) {
+        if (this.#initialized && v === this.lblAlignment) {
             return this;
         }
         this.lblAlignment = v;
-        this.removeClass("start", "center", "end");
+        this.removeClass("a-start", "a-center", "a-end");
         switch (v) {
             case LabelAlignment.START:
-                this.addClass("start");
+                this.addClass("a-start");
                 break;
             case LabelAlignment.CENTER:
-                this.addClass("center");
+                this.addClass("a-center");
                 break;
             case LabelAlignment.END:
-                this.addClass("end");
+                this.addClass("a-end");
                 break;
         }
         return this;

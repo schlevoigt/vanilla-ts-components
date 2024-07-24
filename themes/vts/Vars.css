@@ -1,4 +1,55 @@
 :root {
+    /* #region Fonts */
+    --system-ui: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --system-sans-serif: ui-sans-serif;
+    --system-serif: ui-serif;
+    --system-monospace: ui-monospace;
+    --font-color: hsl(0 0% 15.7%);
+    /* #endregion */
+
+    /* #region Sizes */
+    /* console.log(parseFloat(getComputedStyle(document.documentElement).fontSize)); */
+    /* 0.06833rem ~ 1 Pixel at a font-size of 11pt */
+    /* 3.8804mm ~ 11pt; */
+    --base-size: 1rem;
+    --base-size-half: 0.5rem;
+    --1px: 0.06833rem;
+    --2px: calc(2 * var(--1px));
+    --3px: calc(3 * var(--1px));
+    --4px: calc(4 * var(--1px));
+    --5px: calc(5 * var(--1px));
+    --6px: calc(6 * var(--1px));
+    --7px: calc(7 * var(--1px));
+    --8px: calc(8 * var(--1px));
+    --9px: calc(9 * var(--1px));
+    --10px: calc(10 * var(--1px));
+    --11px: calc(11 * var(--1px));
+    --12px: calc(12 * var(--1px));
+    --13px: calc(13 * var(--1px));
+    --14px: calc(14 * var(--1px));
+    --15px: calc(15 * var(--1px));
+    --16px: calc(16 * var(--1px));
+    --17px: calc(17 * var(--1px));
+    --18px: calc(18 * var(--1px));
+    --19px: calc(19 * var(--1px));
+    --20px: calc(20 * var(--1px));
+    /* #endregion */
+
+    /* #region Colors */
+    --window-background-color: hsl(0 0% 100%);
+    --dialog-background-color: hsl(0 0% 96.5%);
+    --panel-background-color: hsl(0 0% 94.9%);
+    --border-color: hsl(0 0% 89.8%);
+    --border-color-dark: hsl(0 0% 86.7%);
+    --input-background-color: hsl(0 0% 100%);
+    --input-border-color: hsl(0 0% 85.9%);
+    --input-border-color-dark: hsl(0 0% 71%);
+    --input-border-radius: var(--2px);
+    --input-focused-outline-color: hsl(219 93.2% 76.9%);
+    --border-radius-normal: 0.5rem;
+    --border-radius-small: 0.25rem;
+    /* #endregion */
+
     /* delete.svg */
     --img-delete: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGVsbGlwc2Ugc3R5bGU9ImZpbGw6IHJnYigyNTUsIDAsIDApOyIgY3g9IjI1NiIgY3k9IjI1NiIgcng9IjI1NiIgcnk9IjI1NiIvPgogIDxwYXRoIGQ9Ik0gMzY2LjYgMjMwLjgzIEMgMzgwLjUwNCAyMzAuODMgMzkxLjc4NCAyNDIuMDc5IDM5MS43ODQgMjU1Ljk5OSBDIDM5MS43ODQgMjY5LjkxOSAzODAuNTA0IDI4MS4xNjcgMzY2LjYgMjgxLjE2NyBMIDE0NC45MiAyODEuMTY3IEwgMTQ0LjkyIDIzMC44MyBNIDE0NS4zODQgMjgxLjE2NyBDIDEzMS40OTYgMjgxLjE2NyAxMjAuMjE2IDI2OS45MTkgMTIwLjIxNiAyNTUuOTk5IEMgMTIwLjIxNiAyNDIuMDc5IDEzMS40OTYgMjMwLjgzIDE0NS4zODQgMjMwLjgzIiBzdHlsZT0icGFpbnQtb3JkZXI6IGZpbGw7IGZpbGw6IHJnYigyNTUsIDI1NSwgMjU1KTsiIHRyYW5zZm9ybT0ibWF0cml4KDAuNzA3MTA4LCAtMC43MDcxMDYsIDAuNzA3MTA2LCAwLjcwNzEwOCwgLTEwNi4wMzc2MDksIDI1NS45OTkwNTYpIi8+CiAgPHBhdGggZD0iTSAzNjYuNiAyMzAuODMgQyAzODAuNTA0IDIzMC44MyAzOTEuNzg0IDI0Mi4wNzggMzkxLjc4NCAyNTUuOTk4IEMgMzkxLjc4NCAyNjkuOTE4IDM4MC41MDQgMjgxLjE2NiAzNjYuNiAyODEuMTY2IEwgMTQ0LjkyIDI4MS4xNjYgTCAxNDQuOTIgMjMwLjgzIE0gMTQ1LjM4NCAyODEuMTY2IEMgMTMxLjQ5NiAyODEuMTY2IDEyMC4yMTYgMjY5LjkxOCAxMjAuMjE2IDI1NS45OTggQyAxMjAuMjE2IDI0Mi4wNzggMTMxLjQ5NiAyMzAuODMgMTQ1LjM4NCAyMzAuODMiIHN0eWxlPSJwYWludC1vcmRlcjogZmlsbDsgZmlsbDogcmdiKDI1NSwgMjU1LCAyNTUpOyIgdHJhbnNmb3JtPSJtYXRyaXgoMC43MDcxMDcsIDAuNzA3MTA3LCAtMC43MDcxMDcsIDAuNzA3MTA3LCAyNTUuOTk4NTgxLCAtMTA2LjAzOTI2KSIvPgo8L3N2Zz4=");
     /* restart.svg */

@@ -1,4 +1,5 @@
-import { Input, Label } from "@vanilla-ts/dom";
+import { Phrase } from "@vanilla-ts/core";
+import { Div, Input, Label } from "@vanilla-ts/dom";
 import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledComponent.js";
 
 
@@ -6,38 +7,22 @@ import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledCompon
  * Abstract class for building labeled input components, e.g. text inputs, checkboxes etc. that have
  * a descriptive label/caption.
  */
-export abstract class LabeledInputComponent<T extends Input, EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledComponent<Label, EventMap> {
-    protected input: T;
-
+export abstract class LabeledInputComponent<I extends Input, EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledComponent<Label, I, EventMap> {
     /**
-     * Builds a labeled component.
-     * @param labelText The text for the label.
-     * @param id The `id` attribute of the target input component.
+     * Create LabeledInputComponent component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param id The `id` attribute of the target input element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label causes
-     *   the corresponding action on the input component; if `labelAction` is `false`, clicking on
+     *   the corresponding action on the input element; if `labelAction` is `false`, clicking on
      *   the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
      */
-    constructor(labelText: string, id?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
-        super("div", lblPosition, lblAlignment);
-        this.append(
-            this.label = new Label(
-                labelText,
-                id && (labelAction === undefined || labelAction === true)
-                    ? id
-                    : undefined
-            ),
-        );
-    }
-
-    /**
-     * Get input component.
-     */
-    public get Input(): T {
-        return this.input;
+    constructor(labelPhrase: Phrase | Phrase[], id?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean) {
+        super(labelPhrase, lblPosition, lblAlignment);
+        this.initialize(undefined, id, labelAction);
     }
 
     /**
@@ -56,11 +41,11 @@ export abstract class LabeledInputComponent<T extends Input, EventMap extends HT
      *   isn't avaliable for this type, so using `Value` should do nothing.
      */
     public get Value(): string {
-        return this.input.Value;
+        return this.component.Value;
     }
     /** @inheritdoc */
     public set Value(v: string) {
-        this.input.Value = v;
+        this.component.Value = v;
     }
 
     /**
@@ -72,7 +57,20 @@ export abstract class LabeledInputComponent<T extends Input, EventMap extends HT
      * @returns This instance.
      */
     public value(v: string): this {
-        this.input.value(v);
+        this.component.value(v);
+        return this;
+    }
+
+    /** @inheritdoc */
+    protected override buildUI(id?: string, labelAction?: boolean): this {
+        this.ui = new Div()
+            .append(
+                this.label = new Label(
+                    id && (labelAction === undefined || labelAction === true)
+                        ? id
+                        : undefined
+                )
+            );
         return this;
     }
 }
