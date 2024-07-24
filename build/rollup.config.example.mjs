@@ -3,7 +3,7 @@ import terser from "@rollup/plugin-terser";
 
 const compress = process.env.COMPRESS
     ? terser({
-        maxWorkers: 3,
+        maxWorkers: 4,
         ecma: 2023,
         keep_classnames: true,
         keep_fnames: false,

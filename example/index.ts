@@ -1,6 +1,6 @@
 import { CSSClassNameFactory, mixinComponentFactories } from "@vanilla-ts/core";
 import { P, PFactory } from "@vanilla-ts/dom";
-import { LabeledContainer, LabeledContainerFactory } from "../src";
+import { LabeledContainer, LabeledContainerFactory } from "../src/LabeledContainer.js";
 
 const $ = new (mixinComponentFactories(
     CSSClassNameFactory,

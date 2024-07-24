@@ -5,6 +5,9 @@ import { Hr, LiUl, Menu, Span, Text } from "@vanilla-ts/dom";
 /** Types of menu items. */
 export type MenuEntry = MenuItem | MenuHeading | MenuSeparator;
 
+/** Possible types of optional data to be attached to a menu item. */
+type MenuItemData = bigint | boolean | number | object | string | symbol;
+
 /**
  * Menu item component, an entry in a popup menu.
  */
@@ -12,20 +15,23 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
     protected _checked: boolean = false;
     protected _hint: Span;
     protected _content: Span;
+    protected _menuItemData?: MenuItemData;
 
     /**
      * Create menu item component.
      * @param content The content of the menu item.
      * @param hint The content of the menu item hint.
      * @param checked The `Checked` state of the menu item.
+     * @param menuItemData Optional data attached to the menu item.
      */
-    constructor(content: Phrase | Phrase[] | IElementComponent<HTMLElement>, hint?: Phrase | Phrase[] | IElementComponent<HTMLElement>, checked: boolean = false) {
+    constructor(content: Phrase | Phrase[] | IElementComponent<HTMLElement>, hint?: Phrase | Phrase[] | IElementComponent<HTMLElement>, checked: boolean = false, menuItemData?: MenuItemData) {
         super();
         super
             .initialize()
             .content(content)
             .hint(hint)
             .checked(checked)
+            .menuItemData(menuItemData)
             .tabIndex(0);
     }
 
@@ -175,6 +181,27 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
     }
 
     /**
+     * Get/set the data of the menu item.
+     */
+    public get MenuItemData(): MenuItemData | undefined {
+        return this._menuItemData;
+    }
+    /** @inheritdoc */
+    public set MenuItemData(v: MenuItemData | undefined) {
+        this.menuItemData(v);
+    }
+
+    /**
+     * Set the data of the menu item.
+     * @param data The data to be set on the menu item.
+     * @returns This instance.
+     */
+    public menuItemData(data?: MenuItemData) {
+        this._menuItemData = data;
+        return this;
+    }
+
+    /**
      * Build UI of the component.
      * @returns This instance.
      */
@@ -198,11 +225,12 @@ export class MenuItemFactory<T> extends ComponentFactory<MenuItem> {
      * @param content The content of the menu item.
      * @param hint The content of the menu item hint.
      * @param checked The `Checked` state of the menu item.
+     * @param menuItemData Optional data attached to the menu item.
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns MenuItem component.
      */
-    public menuItem(content: Phrase | Phrase[] | IElementComponent<HTMLElement>, hint?: Phrase | Phrase[] | IElementComponent<HTMLElement>, checked: boolean = false, data?: T): MenuItem {
-        return this.setupComponent(new MenuItem(content, hint, checked), data);
+    public menuItem(content: Phrase | Phrase[] | IElementComponent<HTMLElement>, hint?: Phrase | Phrase[] | IElementComponent<HTMLElement>, checked: boolean = false, menuItemData?: MenuItemData, data?: T): MenuItem {
+        return this.setupComponent(new MenuItem(content, hint, checked, menuItemData), data);
     }
 }
 
@@ -436,9 +464,12 @@ export class PopupMenu<EventMap extends PopupMenuEventMap = PopupMenuEventMap> e
 
     /**
      * Displays the pop-up menu.
-     * @param position The position at which the pop-up menu should be displayed. If no position is
+     * @param position The position at which the pop-up menu is to be displayed. If no position is
      * specified, the position from CSS applies (if available there, otherwise 0,0). The position
-     * refers to the top left corner of the page.
+     * refers to the top left corner of the page. If `position` is given, it is always adjusted in a
+     * way that ensures that the menu is never clipped by the layout viewport. If another behavior
+     * is desired, `adjustMenuPosition()` must be overridden.
+     * @see `adjustMenuPosition()`
      * @returns This instance.
      */
     public show(position?: DOMPoint): this {
@@ -449,49 +480,19 @@ export class PopupMenu<EventMap extends PopupMenuEventMap = PopupMenuEventMap> e
         this.setFocusableItems();
         const hasChecked = this.ui.Children.findIndex((e => e instanceof MenuItem && e.Checked)) !== -1;
         hasChecked ? this.ui.addClass("has-checked") : this.ui.removeClass("has-checked");
-        if (position) {
-            /** @todo Handle positions with extreme `left`/`right` values? */
-            // this.style("insetInlineStart", `${position?.x}px`);
-            this.style("left", `${position?.x}px`);
-            this.style("top", `${position?.y}px`);
-        }
         document.body.appendChild(this.DOM);
-        // Adjust position outside the viewport.
+        const d = this.DOM.style.display;
+        const v = this.DOM.style.visibility;
+        const layoutViewportWidth = document.documentElement.scrollWidth;
+        const layoutViewportHeight = document.documentElement.scrollHeight;
+        this.style("visibility", "hidden");
+        this.style("display", "");
+        this.setMenuItemWidths();
         if (position) {
-            const d = this.DOM.style.display;
-            const v = this.DOM.style.visibility;
-            this.style("visibility", "hidden");
-            this.style("display", "");
-            /**
-             * Calculate minimum with with regard to the hints. This code is far from ideal since it
-             * first hides all hints to get the width of the widest menu text and then shows the
-             * hints again, but it works. Care must be taken if `MenuItem` (or an inheriting class)
-             * changes it's inner layout since the code here relies on this layout.
-             */
-            const items = this.Items.filter(e => e instanceof MenuItem);
-            let minItemWidth = 0;
-            for (const item of items) {
-                item.Hint[0]?.Parent?.visible(false);
-            }
-            for (const item of items) {
-                minItemWidth = Math.max(minItemWidth, item.Content[0]?.Parent?.DOM.clientWidth ?? 0);
-            }
-            for (const item of items) {
-                item.Content[0]?.Parent?.style("minWidth", `${minItemWidth}px`);
-            }
-            for (const item of items) {
-                item.Hint[0]?.Parent?.visible(true);
-            }
-            const rect = this.DOM.getBoundingClientRect();
-            if ((rect.left + rect.width) > window.innerWidth) {
-                this.style("left", `${window.innerWidth - rect.width}px`);
-            }
-            if ((rect.top + rect.height) > window.innerHeight) {
-                this.style("top", `${window.innerHeight - rect.height}px`);
-            }
-            this.style("visibility", v);
-            this.style("display", d);
+            this.adjustMenuPosition(position, layoutViewportWidth, layoutViewportHeight);
         }
+        this.style("visibility", v);
+        this.style("display", d);
         window.addEventListener("pointerdown", this.fncRemovePopupMenu);
         window.addEventListener("resize", this.fncRemovePopupMenu);
         window.addEventListener("blur", this.fncRemovePopupMenu);
@@ -536,6 +537,58 @@ export class PopupMenu<EventMap extends PopupMenuEventMap = PopupMenuEventMap> e
             if (item instanceof MenuItem && !item.Disabled /* !! */) {
                 this.focusableItems.push(item); // eslint-disable-line @typescript-eslint/no-unsafe-argument
             }
+        }
+    }
+
+    /**
+     * Adjust minimum widths of menu items.\
+     * Calculate minimum with with regard to the hints. This code is far from ideal since it
+     * first hides all hints to get the width of the widest menu text and then shows the
+     * hints again, but it works. Care must be taken if `MenuItem` (or an inheriting class)
+     * changes it's inner layout since the code here relies on this layout.
+     */
+    protected setMenuItemWidths(): void {
+        const items = this.Items.filter(e => e instanceof MenuItem);
+        let minItemWidth = 0;
+        for (const item of items) {
+            item.Hint[0]?.Parent?.visible(false);
+        }
+        for (const item of items) {
+            minItemWidth = Math.max(minItemWidth, item.Content[0]?.Parent?.DOM.clientWidth ?? 0);
+        }
+        for (const item of items) {
+            item.Content[0]?.Parent?.style("minWidth", `${minItemWidth}px`);
+        }
+        for (const item of items) {
+            item.Hint[0]?.Parent?.visible(true);
+        }
+    }
+
+    /**
+     * Adjusts the position of the menu item in a way that ensures that the menu is never clipped by
+     * the layout viewport.
+     * @param position The position at which the pop-up menu is to be displayed.
+     * @param layoutViewportWidth The width of the layout viewport.
+     * @param layoutViewportHeight The height of the layout viewport.
+     */
+    protected adjustMenuPosition(position: DOMPoint, layoutViewportWidth: number, layoutViewportHeight: number): void {
+        // Prevent clipped position for negative X and Y values.
+        position.x = Math.max(0, position.x);
+        position.y = Math.max(0, position.y);
+        // this.style("insetInlineStart", `${position?.x}px`);
+        // Initial position of the popup menu.
+        this.style("left", `${position?.x}px`);
+        this.style("top", `${position?.y}px`);
+        /**
+         * Adjust potential clipped positon at the right and the bottom.
+         * @todo Handle other extreme positions?
+         */
+        const rect = this.DOM.getBoundingClientRect();
+        if ((window.scrollX + rect.left + rect.width) > layoutViewportWidth) {
+            this.style("left", `${layoutViewportWidth - rect.width}px`);
+        }
+        if ((window.scrollY + rect.top + rect.height) > layoutViewportHeight) {
+            this.style("top", `${layoutViewportHeight - rect.height}px`);
         }
     }
 
