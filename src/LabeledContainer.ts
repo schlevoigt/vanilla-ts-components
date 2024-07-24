@@ -28,8 +28,6 @@ export class LabeledContainer<EventMap extends HTMLElementEventMap = HTMLElement
     constructor(labelPhrase: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
         super(labelPhrase, lblPosition ?? LabelPosition.TOP, lblAlignment);
         this.initialize();
-        // Set target DOM for the `IChildren` mixin!!
-        this.setChildrenDOMTarget(this.component.DOM);
     }
 
     /**
@@ -54,6 +52,12 @@ export class LabeledContainer<EventMap extends HTMLElementEventMap = HTMLElement
     }
 
     /** @inheritdoc */
+    protected override clearOwner(): this {
+        super.clearOwner();
+        return this;
+    }
+
+    /** @inheritdoc */
     protected override buildUI(): this {
         (this.lblPosition === LabelPosition.START) || (this.lblPosition === LabelPosition.TOP)
             ? this.ui = new Div()
@@ -66,6 +70,8 @@ export class LabeledContainer<EventMap extends HTMLElementEventMap = HTMLElement
                     this.component = new Div(),
                     this.label = new Span()
                 );
+        // Set target DOM for the `IChildren` mixin!!
+        this.setChildrenDOMTarget(this.component.DOM);
         return this;
     }
 

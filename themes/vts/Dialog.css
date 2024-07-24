@@ -11,7 +11,10 @@
     &::backdrop {
         position: fixed;
         inset: 0;
-        background: var(--dialog-backdrop)
+        background: transparent;
+    }
+    &.modal-dialog-first::backdrop {
+        background: var(--dialog-backdrop);
     }
     background-color: var(--dialog-background-color);
     &.dialog-window {

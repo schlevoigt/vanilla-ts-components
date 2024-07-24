@@ -201,7 +201,7 @@ export class BusyOverlay<EventMap extends BusyOverlayEventMap = BusyOverlayEvent
      *   used in a `try/finally` context that calls `idle()` in the `finally` block!
      * - `busy()` dispatches a `BusyOverlayBusyEvent` that can be canceled. If the event is
      *   canceled `busy()` does nothing.
-     * @param delay Temporarily overwrites the current default delay (property `Delay`) for this
+     * @param delay Temporarily overrides the current default delay (property `Delay`) for this
      * `busy()` call. The next call of `busy()` will use the default value again.
      * @example
      * ```

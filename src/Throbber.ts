@@ -17,7 +17,8 @@ export class Throbber<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      */
     constructor(active: boolean = true) {
         super();
-        super.initialize()
+        super
+            .initialize()
             .active(active);
     }
 

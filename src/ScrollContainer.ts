@@ -365,125 +365,6 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
     }
 
     /**
-     * Build UI of the component.
-     * @returns This instance.
-     */
-    protected buildUI(): this {
-        this.ui = new Div();
-        /**
-         * The user interface consists mostly of raw DOM elements instead of components, since
-         * - there is no need to access the inner elements from the outside
-         * - and to enable the most performant access to DOM properties of the inner elements.
-         */
-        this.#_dom_ = this.ui.DOM;
-        // Horizontal scroll bar.
-        this.#hBarOverlay = document.createElement("div");
-        this.#hBarOverlay.classList.add("h-bar-overlay");
-        this.#hBarOverlay.addEventListener("wheel", this.#onWheelListener, this.#passiveFalse);
-        this.#hBar = document.createElement("div");
-        this.#hBar.classList.add("h-bar");
-        this.#hBar.addEventListener("pointerdown", this.#fncOnScrollBarPointerDown);
-        this.#hBar.addEventListener("pointerup", this.#fncOnScrollBarPointerUp);
-        this.#hBarOverlay.appendChild(this.#hBar);
-        this.#hBarThumb = document.createElement("div");
-        this.#hBarThumb.classList.add("h-bar-thumb");
-        this.#hBarThumb.addEventListener("pointerdown", this.#fncOnDragThumbPointerDown);
-        this.#hBarThumb.addEventListener("pointerup", this.#fncOnDragThumbPointerUp);
-        this.#hBar.appendChild(this.#hBarThumb);
-        // Vertical scroll bar.
-        this.#vBarOverlay = document.createElement("div");
-        this.#vBarOverlay.classList.add("v-bar-overlay");
-        this.#vBarOverlay.addEventListener("wheel", this.#onWheelListener, this.#passiveFalse);
-        this.#vBar = document.createElement("div");
-        this.#vBar.classList.add("v-bar");
-        this.#vBar.addEventListener("pointerdown", this.#fncOnScrollBarPointerDown);
-        this.#vBar.addEventListener("pointerup", this.#fncOnScrollBarPointerUp);
-        this.#vBarOverlay.appendChild(this.#vBar);
-        this.#vBarThumb = document.createElement("div");
-        this.#vBarThumb.classList.add("v-bar-thumb");
-        this.#vBarThumb.addEventListener("pointerdown", this.#fncOnDragThumbPointerDown);
-        this.#vBarThumb.addEventListener("pointerup", this.#fncOnDragThumbPointerUp);
-        this.#vBar.appendChild(this.#vBarThumb);
-        // Container for content elements.
-        this.#contentContainer = new Div()
-            .addClass("content");
-        // Set target DOM for the `IChildren` mixin!!
-        this.setChildrenDOMTarget(this.#contentContainer.DOM);
-        this.#scrollable = this.#contentContainer.DOM;
-        // Sync scroll bars on scrolling and detect the end of a scroll process.
-        this.#scrollable.addEventListener("scroll", this.#onScrollListener, this.#passiveTrue);
-        this.#scrollable.addEventListener("scroll", this.#onScrollEndListener, this.#passiveTrue);
-        // Sync scrollbar geometry on resizing.
-        this.#resizeObserver = new ResizeObserver((entries => {
-            if (this.#_vertical || this.#_horizontal) {
-                for (const entry of entries) {
-                    if ((entry.target === this.#_dom_) || (entry.target.parentElement === this.#contentContainer.DOM)) {
-                        this.#syncScrollBarGeometry();
-                        // console.log("resize");
-                        break;
-                    }
-                }
-            }
-        }));
-        this.#resizeObserver.observe(this.#_dom_);
-        // Add/remove resize observing on adding/removing nodes.
-        this.#mutationObserver = new MutationObserver(records => {
-            for (const record of records) {
-                for (const node of record.removedNodes) {
-                    node instanceof Element
-                        ? this.#resizeObserver.unobserve(node)
-                        : undefined;
-                }
-                for (const node of record.addedNodes) {
-                    node instanceof Element
-                        ? this.#resizeObserver.observe(node)
-                        : undefined;
-                }
-            }
-            // console.log("mutate");
-            this.#syncScrollBarGeometry();
-        });
-        this.#mutationObserver.observe(this.#contentContainer.DOM, { childList: true, subtree: true, attributes: true, characterData: true }); // eslint-disable-line jsdoc/require-jsdoc
-        // Adjust `Offset` and `ReduceSize` if components are given for adjustments.
-        this.#adjustmentResizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const ref = <HTMLElement>entry.target;
-                let syncScrollBarGeometry = false;
-                if (ref === (<INodeComponent<HTMLElement>>this.#hAdjustment.Offset).DOM) {
-                    this.#hBarStartOffset = ref.offsetLeft;
-                    syncScrollBarGeometry = true;
-                }
-                if (ref === (<INodeComponent<HTMLElement>>this.#hAdjustment.ReduceSize).DOM) {
-                    this.#hBarReduceWidth = ref.offsetWidth;
-                    syncScrollBarGeometry = true;
-                }
-                if (ref === (<INodeComponent<HTMLElement>>this.#vAdjustment.Offset).DOM) {
-                    this.#vBarStartOffset = ref.offsetTop;
-                    syncScrollBarGeometry = true;
-                }
-                if (ref === (<INodeComponent<HTMLElement>>this.#vAdjustment.ReduceSize).DOM) {
-                    this.#vBarReduceHeight = ref.offsetHeight;
-                    syncScrollBarGeometry = true;
-                }
-                syncScrollBarGeometry
-                    ? this.#syncScrollBarGeometry()
-                    : undefined;
-            }
-        });
-        // Mount inner components.
-        if (this.#_horizontal) {
-            this.ui.addClass("horizontal");
-            this.ui.DOM.appendChild(this.#hBarOverlay);
-        }
-        if (this.#_vertical) {
-            this.ui.addClass("vertical");
-            this.ui.DOM.appendChild(this.#vBarOverlay);
-        }
-        this.ui.append(this.#contentContainer);
-        return this;
-    }
-
-    /**
      * Syncs the geometry and the position of the scroll bars. Although `ScrollContainer` tries to
      * detect any changes that may affect the geometry and the position of the scroll bars these
      * checks currently won't detect, for example, a change of `dir="rtl"` somewhere in the DOM.
@@ -846,7 +727,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
     }
 
     /** @inheritdoc */
-    public override clearOwner(): this {
+    protected override clearOwner(): this {
         this.#mutationObserver.disconnect();
         this.#resizeObserver.disconnect();
         this.#scrollable.removeEventListener("scroll", this.#onScrollListener, this.#passiveTrue);
@@ -870,6 +751,125 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
         this.#vBar.remove();
         this.#vBarThumb.remove();
         return super.clearOwner();
+    }
+
+    /**
+     * Build UI of the component.
+     * @returns This instance.
+     */
+    protected buildUI(): this {
+        this.ui = new Div();
+        /**
+         * The user interface consists mostly of raw DOM elements instead of components, since
+         * - there is no need to access the inner elements from the outside
+         * - and to enable the most performant access to DOM properties of the inner elements.
+         */
+        this.#_dom_ = this.ui.DOM;
+        // Horizontal scroll bar.
+        this.#hBarOverlay = document.createElement("div");
+        this.#hBarOverlay.classList.add("h-bar-overlay");
+        this.#hBarOverlay.addEventListener("wheel", this.#onWheelListener, this.#passiveFalse);
+        this.#hBar = document.createElement("div");
+        this.#hBar.classList.add("h-bar");
+        this.#hBar.addEventListener("pointerdown", this.#fncOnScrollBarPointerDown);
+        this.#hBar.addEventListener("pointerup", this.#fncOnScrollBarPointerUp);
+        this.#hBarOverlay.appendChild(this.#hBar);
+        this.#hBarThumb = document.createElement("div");
+        this.#hBarThumb.classList.add("h-bar-thumb");
+        this.#hBarThumb.addEventListener("pointerdown", this.#fncOnDragThumbPointerDown);
+        this.#hBarThumb.addEventListener("pointerup", this.#fncOnDragThumbPointerUp);
+        this.#hBar.appendChild(this.#hBarThumb);
+        // Vertical scroll bar.
+        this.#vBarOverlay = document.createElement("div");
+        this.#vBarOverlay.classList.add("v-bar-overlay");
+        this.#vBarOverlay.addEventListener("wheel", this.#onWheelListener, this.#passiveFalse);
+        this.#vBar = document.createElement("div");
+        this.#vBar.classList.add("v-bar");
+        this.#vBar.addEventListener("pointerdown", this.#fncOnScrollBarPointerDown);
+        this.#vBar.addEventListener("pointerup", this.#fncOnScrollBarPointerUp);
+        this.#vBarOverlay.appendChild(this.#vBar);
+        this.#vBarThumb = document.createElement("div");
+        this.#vBarThumb.classList.add("v-bar-thumb");
+        this.#vBarThumb.addEventListener("pointerdown", this.#fncOnDragThumbPointerDown);
+        this.#vBarThumb.addEventListener("pointerup", this.#fncOnDragThumbPointerUp);
+        this.#vBar.appendChild(this.#vBarThumb);
+        // Container for content elements.
+        this.#contentContainer = new Div()
+            .addClass("content");
+        // Set target DOM for the `IChildren` mixin!!
+        this.setChildrenDOMTarget(this.#contentContainer.DOM);
+        this.#scrollable = this.#contentContainer.DOM;
+        // Sync scroll bars on scrolling and detect the end of a scroll process.
+        this.#scrollable.addEventListener("scroll", this.#onScrollListener, this.#passiveTrue);
+        this.#scrollable.addEventListener("scroll", this.#onScrollEndListener, this.#passiveTrue);
+        // Sync scrollbar geometry on resizing.
+        this.#resizeObserver = new ResizeObserver((entries => {
+            if (this.#_vertical || this.#_horizontal) {
+                for (const entry of entries) {
+                    if ((entry.target === this.#_dom_) || (entry.target.parentElement === this.#contentContainer.DOM)) {
+                        this.#syncScrollBarGeometry();
+                        // console.log("resize");
+                        break;
+                    }
+                }
+            }
+        }));
+        this.#resizeObserver.observe(this.#_dom_);
+        // Add/remove resize observing on adding/removing nodes.
+        this.#mutationObserver = new MutationObserver(records => {
+            for (const record of records) {
+                for (const node of record.removedNodes) {
+                    node instanceof Element
+                        ? this.#resizeObserver.unobserve(node)
+                        : undefined;
+                }
+                for (const node of record.addedNodes) {
+                    node instanceof Element
+                        ? this.#resizeObserver.observe(node)
+                        : undefined;
+                }
+            }
+            // console.log("mutate");
+            this.#syncScrollBarGeometry();
+        });
+        this.#mutationObserver.observe(this.#contentContainer.DOM, { childList: true, subtree: true, attributes: true, characterData: true }); // eslint-disable-line jsdoc/require-jsdoc
+        // Adjust `Offset` and `ReduceSize` if components are given for adjustments.
+        this.#adjustmentResizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const ref = <HTMLElement>entry.target;
+                let syncScrollBarGeometry = false;
+                if (ref === (<INodeComponent<HTMLElement>>this.#hAdjustment.Offset).DOM) {
+                    this.#hBarStartOffset = ref.offsetLeft;
+                    syncScrollBarGeometry = true;
+                }
+                if (ref === (<INodeComponent<HTMLElement>>this.#hAdjustment.ReduceSize).DOM) {
+                    this.#hBarReduceWidth = ref.offsetWidth;
+                    syncScrollBarGeometry = true;
+                }
+                if (ref === (<INodeComponent<HTMLElement>>this.#vAdjustment.Offset).DOM) {
+                    this.#vBarStartOffset = ref.offsetTop;
+                    syncScrollBarGeometry = true;
+                }
+                if (ref === (<INodeComponent<HTMLElement>>this.#vAdjustment.ReduceSize).DOM) {
+                    this.#vBarReduceHeight = ref.offsetHeight;
+                    syncScrollBarGeometry = true;
+                }
+                syncScrollBarGeometry
+                    ? this.#syncScrollBarGeometry()
+                    : undefined;
+            }
+        });
+        // Mount inner components.
+        if (this.#_horizontal) {
+            this.ui.addClass("horizontal");
+            this.ui.DOM.appendChild(this.#hBarOverlay);
+        }
+        if (this.#_vertical) {
+            this.ui.addClass("vertical");
+            this.ui.DOM.appendChild(this.#vBarOverlay);
+        }
+        this.ui.append(this.#contentContainer);
+        return this;
     }
 
     static {

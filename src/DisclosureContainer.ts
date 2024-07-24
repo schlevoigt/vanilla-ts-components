@@ -1,5 +1,5 @@
-import { ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_CANCELABLE_EVENT_INIT_DICT, IElementWithChildrenComponent, INodeComponent } from "@vanilla-ts/core";
-import { Button, Div, P, Span } from "@vanilla-ts/dom";
+import { AChildren, ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_CANCELABLE_EVENT_INIT_DICT, IElementWithChildrenComponent, INodeComponent, mixin } from "@vanilla-ts/core";
+import { Button, Div, Span } from "@vanilla-ts/dom";
 
 
 /**
@@ -68,7 +68,7 @@ export interface DisclosureContainerEventMap extends HTMLElementEventMap {
 /**
  * Container whose content can be disclosed/undisclosed.
  */
-export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = DisclosureContainerEventMap> extends AElementComponentWithInternalUI<Div, EventMap> {
+export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = DisclosureContainerEventMap> extends AElementComponentWithInternalUI<Div, EventMap> { // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
     protected headerContainer: IElementWithChildrenComponent<HTMLDivElement>;
     protected discloseButton: Button;
     protected headerContent: IElementWithChildrenComponent<HTMLDivElement>;
@@ -80,26 +80,27 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
 
     /**
      * Creates DisclosureContainer component.
-     * @param header The content for the header of the disclosure container (components or string,
-     * in the case of a string, the header content is a `Span` component with the string as the
-     * content).
-     * @param content The content for the disclosure container (components or string, in the case
-     * of a string, the container content is a `P` component with the string as the content).
+     * @param header The header content (components or string). In the case of a string, the header
+     * content is a `Span` component with the string as the content. If `undefined` or an empty
+     * array, the header is empty.
+     * @param content The content components for the disclosure container.
      * @param labels The captions/titles for the disclosure button.
      * @param disclosed `true`, if the initial state of the disclosure container is 'disclosed',
-     * otherwise `false`.
+     * otherwise `false`. Default: `true`.
      * @param weakUndisclosed There are two ways of 'hiding'/'unhiding' the inner content container:
      * - by pure CSS, e.g. only the class names `disclosed`/`undisclosed` are set
-     * - and (additionally to setting the mentioned class names) by removing/adding the inner
-     *   content container from/to the internal DOM.
-     * If `weak` is `true`, only the mentioned class names are set and the inner content container
-     * will be left as is (mounted). If `weak` is `false`, the inner content container will be
-     * removed/added from/to the internal DOM.
+     * - and (additionally to setting the class names mentioned above) by _removing/adding_ the
+     *   inner content container from/to the internal DOM.
+     * If `weakUndisclosed` is `true`, only the mentioned class names are set and the inner content
+     * container will be left as is (mounted). If `weakUndisclosed` is `false`, the inner content
+     * container will be _removed/added_ from/to the internal DOM.
+     *
+     * `weakUndisclosed` can help to animate the states `disclosed`/`undisclosed`. Default: `false`.
      * @param appearance The disclosure container appearance (header position and orientation).
      */
     constructor(
-        header?: INodeComponent<Node>[] | string,
-        content?: INodeComponent<Node>[] | string,
+        header?: (INodeComponent<Node> | undefined | null)[] | string,
+        content?: (INodeComponent<Node> | undefined | null)[],
         labels: DisclosureContainerLabels = { Captions: ["+", "-"], Titles: ["", ""] }, // eslint-disable-line jsdoc/require-jsdoc
         disclosed: boolean = true,
         weakUndisclosed: boolean = false,
@@ -110,9 +111,9 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
             .labels(labels)
             .weakUndisclosed(weakUndisclosed)
             .disclosed(disclosed)
-            .appearance(appearance);
-        header !== undefined ? this.header(header) : undefined;
-        content !== undefined ? this.content(content) : undefined;
+            .appearance(appearance)
+            .header(header)
+            .append(...(content ?? []));
     }
 
     /**
@@ -167,48 +168,20 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
     /**
      * Set new content for the header (the disclosure button is retained). Setting new content for
      * the header _disposes the former content if `extractTo is `undefined`_!
-     * @param header The new header content (components or string, in the case of a string, the
-     * header content is a `Span` component with the string as the content).
+     * @param header The new header content (components or string). In the case of a string, the
+     * header content is a `Span` component with the string as the content. If `undefined` or an
+     * empty array, the header is emptied.
      * @param extractTo An array, that, if given, will receive the former header component(s).
      * @returns This instance.
      */
-    public header(header: INodeComponent<Node>[] | string, extractTo?: INodeComponent<Node>[]): this {
-        return this.swapChildren(true, header, extractTo);
-    }
-
-    /**
-     * Get the container component, that holds content of the disclosure container.
-     */
-    public get Content(): IElementWithChildrenComponent<HTMLDivElement> {
-        return this.contentContainer;
-    }
-
-    /**
-     * Set new content. Setting new content _disposes the former content if `extractTo is
-     * `undefined`_!
-     * @param content The new content (components or string, in the case of a string, the content is
-     * a `P` component with the string as the content).
-     * @param extractTo An array, that, if given, will receive the former content component(s).
-     * @returns This instance.
-     */
-    public content(content: INodeComponent<Node>[] | string, extractTo?: INodeComponent<Node>[]): this {
-        return this.swapChildren(false, content, extractTo);
-    }
-
-    /**
-     * @see `header()` and `content()`.
-     */
-    /* eslint-disable-next-line jsdoc/require-jsdoc */
-    protected swapChildren(ofHeader: boolean, content: INodeComponent<Node>[] | string, extractTo?: INodeComponent<Node>[]): this {
-        const targetContainer = ofHeader ? this.headerContent : this.contentContainer;
+    public header(header?: (INodeComponent<Node> | undefined | null)[] | string, extractTo?: INodeComponent<Node>[]): this {
         extractTo
-            ? targetContainer.extract(extractTo)
-            : targetContainer.clear();
-        typeof content === "string"
-            ? ofHeader
-                ? targetContainer.append(new Span(content).addClass("header-text"))
-                : targetContainer.append(new P(content))
-            : targetContainer.append(...content);
+            ? this.headerContent.extract(extractTo)
+            : this.headerContent.clear();
+        this.headerContent.removeClass("header-text");
+        typeof header === "string"
+            ? this.headerContent.append(new Span(header).addClass("header-text"))
+            : this.headerContent.append(...(header ?? []));
         return this;
     }
 
@@ -281,11 +254,13 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
      * Set the 'weak undisclosed' property.
      * @param weak There are two ways of 'hiding'/'unhiding' the inner content container:
      * - by pure CSS, e.g. only the class names `disclosed`/`undisclosed` are set
-     * - and (additionally to setting the mentioned class names) by removing/adding the inner
-     *   content container from/to the internal DOM.
+     * - and (additionally to setting the class names mentioned above) by _removing/adding_ the
+     *   inner content container from/to the internal DOM.
      * If `weak` is `true`, only the mentioned class names are set and the inner content container
      * will be left as is (mounted). If `weak` is `false`, the inner content container will be
-     * removed/added from/to the internal DOM.
+     * _removed/added_ from/to the internal DOM.
+     *
+     * `weakUndisclosed` can help to animate the states `disclosed`/`undisclosed`.
      * @returns This instance.
      */
     public weakUndisclosed(weak: boolean): this {
@@ -295,11 +270,9 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
                 ? this.addClass("weak")
                 : this.removeClass("weak");
             if (!this.Disclosed) {
-                if (this._weakUndisclosed) {
-                    this.ui.append(this.contentContainer);
-                } else {
-                    this.ui.remove(this.contentContainer);
-                }
+                this._weakUndisclosed
+                    ? this.ui.append(this.contentContainer)
+                    : this.ui.remove(this.contentContainer);
             }
         }
         return this;
@@ -363,6 +336,29 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
     }
 
     /**
+     * Removes (_and disposes of_) all children from the disclosure container (except the header).
+     * @returns This instance.
+     */
+    public clearContent(): this {
+        const extracted: INodeComponent<Node>[] = [];
+        this.extract(extracted);
+        for (const component of extracted) {
+            component.dispose();
+        }
+        return this;
+    }
+
+    /** @inheritdoc */
+    protected override clearOwner(): this {
+        // The content container is always cleared due to the `AChildren` mixin, but it is not
+        // disposed of if it is not mounted. This is the case if `_weakUndisclosed` is `false` _and_
+        // the `DisclosureContainer` instance is undisclosed.
+        this.ui.contains(this.contentContainer) || this.contentContainer.dispose();
+        super.clearOwner();
+        return this;
+    }
+
+    /**
      * Build UI of the component.
      * @returns This instance.
      */
@@ -382,20 +378,19 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
                 this.contentContainer = new Div()
                     .addClass("content-container"),
             );
+        // Set target DOM for the `IChildren` mixin!!
+        this.setChildrenDOMTarget(this.contentContainer.DOM);
         return this;
     }
 
-    /** @inheritdoc */
-    public override clear(): this {
-        // `clear()` wouldn't reach the content container if `_weakUndisclosed` is `false` and
-        // `DisclosureContainer` is undisclosed because the content container isn't mounted then!
-        !this._weakUndisclosed && !this._disclosed
-            ? this.contentContainer.clear()
-            : undefined;
-        super.clear(); // !!
-        return this;
+    static {
+        /** Mixin the IChildren implementation (which targets the `this.contentContainer`). */
+        mixin(false, DisclosureContainer, AChildren);
     }
 }
+
+/** Augment class definition with `IChildren` (see `static`). */
+export interface DisclosureContainer<EventMap extends DisclosureContainerEventMap = DisclosureContainerEventMap> extends AElementComponentWithInternalUI<Div, EventMap>, AChildren<HTMLElement, EventMap> { }
 
 /**
  * Factory for DisclosureContainer components.
@@ -403,28 +398,29 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
 export class DisclosureContainerFactory<T> extends ComponentFactory<DisclosureContainer> {
     /**
      * Create, set up and return DisclosureContainer component.
-     * @param header The content for the header of the disclosure container (components or string,
-     * in the case of a string, the header content is a `Span` component with the string as the
-     * content).
-     * @param content The content for the disclosure container (components or string, in the case
-     * of a string, the container content is a `Span` component with the string as the content).
+     * @param header The header content (components or string). In the case of a string, the header
+     * content is a `Span` component with the string as the content. If `undefined` or an empty
+     * array, the header is empty.
+     * @param content The content components for the disclosure container.
      * @param labels The captions/titles for the disclosure button.
      * @param disclosed `true`, if the initial state of the disclosure container is 'disclosed',
-     * otherwise `false`.
+     * otherwise `false`. Default: `true`.
      * @param weakUndisclosed There are two ways of 'hiding'/'unhiding' the inner content container:
      * - by pure CSS, e.g. only the class names `disclosed`/`undisclosed` are set
-     * - and (additionally to setting the mentioned class names) by removing/adding the inner
-     *   content container from/to the internal DOM.
-     * If `weak` is `true`, only the mentioned class names are set and the inner content container
-     * will be left as is (mounted). If `weak` is `false`, the inner content container will be
-     * removed/added from/to the internal DOM.
+     * - and (additionally to setting the class names mentioned above) by _removing/adding_ the
+     *   inner content container from/to the internal DOM.
+     * If `weakUndisclosed` is `true`, only the mentioned class names are set and the inner content
+     * container will be left as is (mounted). If `weakUndisclosed` is `false`, the inner content
+     * container will be _removed/added_ from/to the internal DOM.
+     *
+     * `weakUndisclosed` can help to animate the states `disclosed`/`undisclosed`. Default: `false`.
      * @param appearance The disclosure container appearance (header position and orientation).
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns DisclosureContainer component.
      */
     public disclosureContainer(
         header?: INodeComponent<Node>[] | string,
-        content?: INodeComponent<Node>[] | string,
+        content?: INodeComponent<Node>[],
         labels: DisclosureContainerLabels = { Captions: ["+", "-"], Titles: ["", ""] }, // eslint-disable-line jsdoc/require-jsdoc
         disclosed: boolean = true,
         weakUndisclosed: boolean = false,

@@ -1,5 +1,5 @@
-import { ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_EVENT_INIT_DICT, HTMLElementWithChildren, IElementWithChildrenComponent, INodeComponent, NullableString } from "@vanilla-ts/core";
-import { Button, Div, P, Span } from "@vanilla-ts/dom";
+import { AChildren, ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_EVENT_INIT_DICT, HTMLElementWithChildren, IElementWithChildrenComponent, INodeComponent, mixin, NullableString } from "@vanilla-ts/core";
+import { Button, Div, Span } from "@vanilla-ts/dom";
 
 
 /////////////////////////////
@@ -637,15 +637,11 @@ class TabContentContainer extends Div {
  * separate non-mounted tab content container which both will be used, mounted and handled by
  * `TabGroup`.
  */
-export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap> {
-    #cpHeader?: INodeComponent<Node>[] | string;
-    #cpContent?: INodeComponent<Node>[] | string;
-    #cpCloseBtn: boolean;
-    #cpLabels: TabCloseLabels;
+export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap> { // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
+    protected headerContent: IElementWithChildrenComponent<HTMLDivElement>;
     protected closeBtn: Button;
     protected _closeBtn: boolean;
     protected _labels: TabCloseLabels;
-    protected headerContent: IElementWithChildrenComponent<HTMLDivElement>;
     // Inner content container to make layout, content access/switching and tab switching easier.
     protected contentContainer: IElementWithChildrenComponent<HTMLDivElement>;
     protected tabGroup?: TabGroup;
@@ -654,8 +650,9 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
 
     /**
      * Creates a tab.
-     * @param header The content for the header of the tab (components or string, in the case of a
-     * string, the header content is a `Span` component with the string as the content).
+     * @param header The header content (components or string). In the case of a string, the header
+     * content is a `Span` component with the string as the content. If `undefined` or an empty
+     * array, the header is empty.
      * @param content The content for the tab (components or string, in the case of a string, the
      * container content is a `P` component with the string as the content).
      * @param closeBtn If `true` (default), a standard close button is added to the tab header,
@@ -664,46 +661,17 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
      */
     constructor(
         header?: INodeComponent<Node>[] | string,
-        content?: INodeComponent<Node>[] | string,
+        content?: INodeComponent<Node>[],
         closeBtn: boolean = true,
         labels: TabCloseLabels = { Caption: "x", Title: "" } // eslint-disable-line jsdoc/require-jsdoc
     ) {
         super();
-        this.#cpHeader = header;
-        this.#cpContent = content;
-        this.#cpCloseBtn = closeBtn;
-        this.#cpLabels = labels;
-        super.initialize();
-    }
-
-    /** @inheritdoc */
-    protected override buildUI(): this {
-        // The UI of a tab only consist of the tab header, the tab content (`this.contentContainer`)
-        // is separate container that will be mounted/unmounted by a `TabGroup` instance. See also
-        // functions `clear()` and `dispose()`.
-        // The close button is also a component that is only mounted/umounted on demand, so it has
-        // to be handled separately in `clear()` and `dispose()`.
-        this.ui = new Div()
-            .addClass("header-container")
-            .append(
-                this.headerContent = new Div()
-                    .addClass("header-content")
-            )
-            .on("pointerup", (ev) => {
-                if (ev.target !== this.closeBtn.DOM) {
-                    this.tabGroup?.requestActivateTab(this);
-                }
-            });
-        this.closeBtn = new Button()
-            .addClass("close")
-            .on("click", () => this.tabGroup?.requestCloseTab(this));
-        this.labels(this.#cpLabels);
-        this.closeButton(this.#cpCloseBtn);
-        this.contentContainer = new TabContentContainer()
-            .addClass("content-container");
-        this.#cpHeader !== undefined ? this.header(this.#cpHeader) : undefined;
-        this.#cpContent !== undefined ? this.content(this.#cpContent) : undefined;
-        return this;
+        super
+            .initialize()
+            .closeButton(closeBtn)
+            .labels(labels)
+            .header(header)
+            .append(...(content ?? []));
     }
 
     /**
@@ -805,63 +773,45 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
     }
 
     /**
-     * Set new content for the header (the close button is retained).
-     * @param header The new header content (components or string, in the case of a string, the
-     * header content is a `Span` component with the string as the content).
+     * Set new content for the header (the close button is retained). Setting new content for the
+     * the header _disposes the former content if `extractTo is `undefined`_!
+     * @param header The new header content (components or string) In the case of a string, the
+     * header content is a `Span` component with the string as the content. If `undefined` or an
+     * empty array, the header is emptied.
      * @param extractTo An array, that, if given, will receive the former header component(s).
      * @returns This instance.
      */
-    public header(header: INodeComponent<Node>[] | string, extractTo?: INodeComponent<Node>[]): this {
-        return this.swapChildren(true, header, extractTo);
+    public header(header?: (INodeComponent<Node> | undefined | null)[] | string, extractTo?: INodeComponent<Node>[]): this {
+        extractTo
+            ? this.headerContent.extract(extractTo)
+            : this.headerContent.clear();
+        this.headerContent.removeClass("header-text");
+        typeof header === "string"
+            ? this.headerContent.append(new Span(header).addClass("header-text"))
+            : this.headerContent.append(...(header ?? []));
+        return this;
     }
 
     /**
-     * Get the container component, that holds content of the tab.
+     * Get the container component, that holds content of the tab.\
+     * __Note:__ This property never should be used outside the context of a tab group. It only
+     * exists to enable `TabGroup` to mount/unmount the content of tabs!
      */
     public get Content(): IElementWithChildrenComponent<HTMLDivElement> {
         return this.contentContainer;
     }
 
     /**
-     * Set new content.
-     * @param content The new content (components or string, in the case of a string, the content is
-     * a `P` component with the string as the content).
-     * @param extractTo An array, that, if given, will receive the former content component(s).
+     * Removes (_and disposes of_) all children from the tab (except the header).
      * @returns This instance.
      */
-    public content(content: INodeComponent<Node>[] | string, extractTo?: INodeComponent<Node>[]): this {
-        return this.swapChildren(false, content, extractTo);
-    }
-
-    /**
-     * @see `header()` and `content()`.
-     */
-    /* eslint-disable-next-line jsdoc/require-jsdoc */
-    protected swapChildren(ofHeader: boolean, content: INodeComponent<Node>[] | string, extractTo?: INodeComponent<Node>[]): this {
-        const targetContainer = ofHeader ? this.headerContent : this.contentContainer;
-        extractTo
-            ? targetContainer.extract(extractTo)
-            : targetContainer.clear();
-        typeof content === "string"
-            ? ofHeader
-                ? targetContainer.append(new Span(content).title(content).addClass("header-text"))
-                : targetContainer.append(new P(content))
-            : targetContainer.append(...content);
-        return this;
-    }
-
-    /**
-     * Handles a tab groups `tab` event. If the tab passed as a member of the custom event `detail`
-     * isn't this instance, handling the event must not do anything.
-     * @param ev The custom tab event.
-     */
-    protected tabEvent(ev: TabEvent): void {
-        if (ev.$.Tab == this) {
-            this.active = ev.$.Active;
-            this.active
-                ? this.ui.addClass("active")
-                : this.ui.removeClass("active");
+    public clearContent(): this {
+        const extracted: INodeComponent<Node>[] = [];
+        this.extract(extracted);
+        for (const component of extracted) {
+            component.dispose();
         }
+        return this;
     }
 
     /** @inheritdoc */
@@ -884,21 +834,72 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
     }
 
     /**
+     * Handles a tab groups `tab` event. If the tab passed as a member of the custom event `detail`
+     * isn't this instance, handling the event must not do anything.
+     * @param ev The custom tab event.
+     */
+    protected tabEvent(ev: TabEvent): void {
+        if (ev.$.Tab == this) {
+            this.active = ev.$.Active;
+            this.active
+                ? this.ui.addClass("active")
+                : this.ui.removeClass("active");
+        }
+    }
+
+    /**
      * Removes _and_ disposes of _all_ child components from the content container and this
      * component (`this.ui`).
      * @returns This instance.
      */
-    public override clear(): this {
+    protected override clearOwner(): this {
         this._closeBtn
-            ? undefined                 // Child of `this.ui`, so handled by `super.clear()`.
+            ? undefined                 // Child of `this.ui`, so handled by `clear()`.
             : this.closeBtn.dispose();  // Manual disposal necessary.
-        // Manual disposal necessary since the container can be outside the regular component tree
-        // if the tab isn't active.
-        this.contentContainer.clear();
-        super.clear();
+        // The content container is always cleared due to the `AChildren` but since it is never
+        // mounted in `this.ui` it must be disposed of manually.
+        // Remove first from a potential parent.
+        this.contentContainer.Parent?.remove(this.contentContainer);
+        this.contentContainer.dispose();
+        super.clearOwner();
         return this;
     }
+
+    /** @inheritdoc */
+    protected override buildUI(): this {
+        // The UI of a tab only consist of the tab header. The tab content (`this.contentContainer`)
+        // is a separate container that will be mounted/unmounted by a `TabGroup` instance. See also
+        // functions `clear()` and `dispose()`.
+        // The close button is also a component that is only mounted/umounted on demand, so it has
+        // to be handled separately in `clearOwner()`.
+        this.ui = new Div()
+            .addClass("header-container")
+            .append(
+                this.headerContent = new Div()
+                    .addClass("header-content")
+            )
+            .on("pointerup", (ev) => {
+                if (ev.target !== this.closeBtn.DOM) {
+                    this.tabGroup?.requestActivateTab(this);
+                }
+            });
+        this.closeBtn = new Button()
+            .addClass("close")
+            .on("click", () => this.tabGroup?.requestCloseTab(this));
+        this.contentContainer = new TabContentContainer().addClass("content-container");
+        // Set target DOM for the `IChildren` mixin!!
+        this.setChildrenDOMTarget(this.contentContainer.DOM);
+        return this;
+    }
+
+    static {
+        /** Mixin the IChildren implementation (which targets the `this.contentContainer`). */
+        mixin(false, Tab, AChildren);
+    }
 }
+
+/** Augment class definition with `IChildren` (see `static`). */
+export interface Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap>, AChildren<HTMLElement, EventMap> { }
 
 /**
  * Factory for Tab components.
@@ -906,8 +907,9 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
 export class TabFactory<T> extends ComponentFactory<Tab> {
     /**
      * Create, set up and return Tab component.
-     * @param header The content for the header of the tab (components or string, in the case of a
-     * string, the header content is a `Span` component with the string as the content).
+     * @param header The header content (components or string). In the case of a string, the header
+     * content is a `Span` component with the string as the content. If `undefined` or an empty
+     * array, the header is empty.
      * @param content The content for the tab (components or string, in the case of a string, the
      * container content is a `P` component with the string as the content).
      * @param closeBtn If `true` (default), a standard close button is added to the tab header,
@@ -917,7 +919,7 @@ export class TabFactory<T> extends ComponentFactory<Tab> {
      * @returns TabGroup component.
      */
     public tab(header?: INodeComponent<Node>[] | string,
-        content?: INodeComponent<Node>[] | string,
+        content?: INodeComponent<Node>[],
         closeBtn?: boolean,
         labels: TabCloseLabels = { Caption: "x", Title: "Close" }, // eslint-disable-line jsdoc/require-jsdoc
         data?: T): Tab {
