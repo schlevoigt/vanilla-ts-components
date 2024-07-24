@@ -48,8 +48,8 @@
     --input-border-color-dark: hsl(0 0% 71%);
     --input-border-radius: var(--2px);
     --input-focused-outline-color: hsl(219 93.2% 76.9%);
-    --border-radius-normal: 0.5rem;
-    --border-radius-small: 0.25rem;
+    --border-radius-normal: var(--6px);
+    --border-radius-small: var(--3px);
     /* #endregion */
 
     /* delete.svg */
