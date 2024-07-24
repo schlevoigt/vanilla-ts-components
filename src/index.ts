@@ -1,5 +1,5 @@
 export * from "./DisclosureContainer.js";
-export * from "./LabeledAnchror.js";
+export * from "./LabeledAnchor.js";
 export * from "./LabeledCheckbox.js";
 export * from "./LabeledComponent.js";
 export * from "./LabeledContainer.js";

@@ -4,27 +4,27 @@ import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledCompon
 
 
 /**
- * Labeled anchor component. Can be used to display hyperlink which has a label,
- * @inheritdoc
+ * Labeled anchor component.
  */
 export class LabeledAnchor<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledComponent<Span, A, EventMap> {
     /**
      * Create LabeledAnchor component.
+     * @param href The `href` attribute for the `<a>` element.
      * @param labelPhrase The phrasing content for the label.
-     * @param anchorPhrase The phrasing content for the p element.
+     * @param anchorPhrase The phrasing content for the `<a>` element.
      * @param lblPosition The position of the label.
      * @param lblAlignment The alignment of the label.
      */
-    constructor(labelPhrase: Phrase | Phrase[], anchorPhrase: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
+    constructor(href: string, labelPhrase: Phrase | Phrase[], anchorPhrase?: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
         super(labelPhrase, lblPosition ?? LabelPosition.START, lblAlignment);
-        this.initialize();
+        this.initialize(undefined, href);
         Array.isArray(anchorPhrase)
             ? this.component.phrase(...anchorPhrase)
-            : this.component.phrase(anchorPhrase);
+            : !anchorPhrase || this.component.phrase(anchorPhrase);
     }
 
     /**
-     * Get P component of this component. Equivalent to `Component`, just with a more descriptive
+     * Get A component of this component. Equivalent to `Component`, just with a more descriptive
      * name.
      */
     public get Anchor(): A {
@@ -32,28 +32,38 @@ export class LabeledAnchor<EventMap extends HTMLElementEventMap = HTMLElementEve
     }
 
     /**
-     * Get/set the href attribute for the anchor.
+     * Get/set the `href` attribute of the anchor component (re-exported for easier direct access).
      */
-    public get HRef(): string {
-        return this.Anchor.DOM.href;
+    public get Href(): string {
+        return this.component.Href;
     }
     /** @inheritdoc */
-    public set HRef(value: string) {
-        this.Anchor.DOM.href = value;
+    public set Href(v: string) {
+        this.component.Href = v;
     }
 
     /**
-     * Set the phrasing content of the components anchor. __The setter `LabelPhrase` here is an
-     * alias for the property `this.Anchor.Phrase`.__
+     * Sets the `href` attribute of the anchor component (re-exported for easier direct access).
+     * @param v The value to be set.
+     * @returns This instance.
+     */
+    public href(v: string): this {
+        this.component.href(v);
+        return this;
+    }
+
+    /**
+     * Set the phrasing content of the components anchor. __The setter `Phrase` here is an alias for
+     * the property `this.Anchor.Phrase`.__
      */
     public set Phrase(phrase: Phrase | Phrase[]) {
         this.component.Phrase = phrase;
     }
 
     /**
-     * Set the phrasing content of the the components anchor. __The function `labelPhrase()` here
-     * is an alias for the function `this.Label.phrase()` but it returns _this_ instance instead of
-     * the 'Anchor' instance.__
+     * Set the phrasing content of the the components anchor. __The function `phrase()` here is an
+     * alias for the function `this.Anchor.phrase()` but it returns _this_ instance instead of the
+     * 'Anchor' instance.__
      * @param phrase The phrasing content to be set for the anchor.
      * @returns This instance.
      */
@@ -63,16 +73,16 @@ export class LabeledAnchor<EventMap extends HTMLElementEventMap = HTMLElementEve
     }
 
     /** @inheritdoc */
-    protected override buildUI(): this {
+    protected override buildUI(href: string): this {
         (this.lblPosition === LabelPosition.START) || (this.lblPosition === LabelPosition.TOP)
             ? this.ui = new Div()
                 .append(
                     this.label = new Span(),
-                    this.component = new A()
+                    this.component = new A(href)
                 )
             : this.ui = new Div()
                 .append(
-                    this.component = new A(),
+                    this.component = new A(href),
                     this.label = new Span()
                 );
         return this;
@@ -85,14 +95,15 @@ export class LabeledAnchor<EventMap extends HTMLElementEventMap = HTMLElementEve
 export class LabeledAnchorFactory<T> extends ComponentFactory<LabeledAnchor> {
     /**
      * Create, set up and return LabeledAnchor component.
+     * @param href The `href` attribute for the `<a>` element.
      * @param labelPhrase The phrasing content for the label.
-     * @param anchorPhrase The phrasing content for the p element.
+     * @param anchorPhrase The phrasing content for the `<a>` element.
      * @param lblPosition The position of the label.
      * @param lblAlignment The alignment of the label.
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns LabeledAnchor component.
      */
-    public labeledAnchor(labelPhrase: Phrase | Phrase[], anchorPhrase: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledAnchor {
-        return this.setupComponent(new LabeledAnchor(labelPhrase, anchorPhrase, lblPosition, lblAlignment), data);
+    public labeledAnchor(href: string, labelPhrase: Phrase | Phrase[], anchorPhrase?: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledAnchor {
+        return this.setupComponent(new LabeledAnchor(href, labelPhrase, anchorPhrase, lblPosition, lblAlignment), data);
     }
 }

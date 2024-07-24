@@ -14,7 +14,6 @@ import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledCompon
  * The contained paragraph element itself is a compoment (`P`) so it can be used to display styled
  * text by, for example, appending `Span`, `Em` and other components to it. The same applies for the
  * label, which is a `Span` component.
- * @inheritdoc
  */
 export class LabeledParagraph<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledComponent<Span, P, EventMap> {
     /**
@@ -41,16 +40,16 @@ export class LabeledParagraph<EventMap extends HTMLElementEventMap = HTMLElement
     }
 
     /**
-     * Set the phrasing content of the components paragraph. __The setter `LabelPhrase` here is an
-     * alias for the property `this.Paragraph.Phrase`.__
+     * Set the phrasing content of the components paragraph. __The setter `Phrase` here is an alias
+     * for the property `this.Paragraph.Phrase`.__
      */
     public set Phrase(phrase: Phrase | Phrase[]) {
         this.component.Phrase = phrase;
     }
 
     /**
-     * Set the phrasing content of the the components paragraph. __The function `labelPhrase()` here
-     * is an alias for the function `this.Label.phrase()` but it returns _this_ instance instead of
+     * Set the phrasing content of the the components paragraph. __The function `phrase()` here is
+     * an alias for the function `this.Paragraph.phrase()` but it returns _this_ instance instead of
      * the 'Paragraph' instance.__
      * @param phrase The phrasing content to be set for the paragraph.
      * @returns This instance.
