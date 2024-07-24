@@ -55,9 +55,9 @@ export enum DialogState {
 }
 
 /**
- * Custom 'show' event for dialogs.
+ * Custom 'dlg-show' event for dialogs.
  */
-export class DialogShowEvent extends ACustomComponentEvent<"show", Dialog, {
+export class DialogShowEvent extends ACustomComponentEvent<"dlg-show", Dialog, {
     /** `true` if the dialog is about to be displayed modal, otherwise false. */
     Modal: boolean;
 }> {
@@ -68,21 +68,21 @@ export class DialogShowEvent extends ACustomComponentEvent<"show", Dialog, {
      * @param customEventInitDict Optional event properties.
      */
     constructor(sender: Dialog, modal: boolean, customEventInitDict: EventInit = DEFAULT_CANCELABLE_EVENT_INIT_DICT) {
-        super("show", sender, { Modal: modal }, customEventInitDict); // eslint-disable-line jsdoc/require-jsdoc
+        super("dlg-show", sender, { Modal: modal }, customEventInitDict); // eslint-disable-line jsdoc/require-jsdoc
     }
 }
 
 /**
- * Custom 'close' event for dialogs.
+ * Custom 'dlg-close' event for dialogs.
  */
-export class DialogCloseEvent extends ACustomComponentEvent<"close", Dialog> {
+export class DialogCloseEvent extends ACustomComponentEvent<"dlg-close", Dialog> {
     /**
      * Create dialog close event.
      * @param sender The event emitter (always `Dialog`).
      * @param customEventInitDict Optional event properties.
      */
     constructor(sender: Dialog, customEventInitDict: EventInit = DEFAULT_CANCELABLE_EVENT_INIT_DICT) {
-        super("close", sender, undefined, customEventInitDict);
+        super("dlg-close", sender, undefined, customEventInitDict);
     }
 }
 
@@ -94,12 +94,12 @@ export interface DialogEventMap extends HTMLElementEventMap {
      * A dialog is to be shown. Event handlers can prevent showing the dialog by calling
      * `preventDefault()`.
      */
-    "show": DialogShowEvent;
+    "dlg-show": DialogShowEvent;
     /**
      * A dialog is to be colsed. Event handlers can prevent closing the dialog by calling
      * `preventDefault()`.
      */
-    "close": DialogCloseEvent;
+    "dlg-close": DialogCloseEvent;
 }
 
 /**
@@ -251,34 +251,34 @@ export class Dialog<EventMap extends DialogEventMap = DialogEventMap> extends AE
 
     /**
      * Keyboard handling for the dialog.
-     * @param event The keyboard event.
+     * @param ev The keyboard event.
      */
-    protected onKeyDown(event: KeyboardEvent): void {
-        switch (event.key) {
+    protected onKeyDown(ev: KeyboardEvent): void {
+        switch (ev.key) {
             // case "Enter":
             //     break;
             case "Escape":
-                event.preventDefault();
-                event.stopImmediatePropagation();
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
                 if (this._options.CloseWithEscape) {
                     this.close();
                 }
                 break;
             case "Tab":
-                if (this._options.LockFocusCycleInside && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                if (this._options.LockFocusCycleInside && !ev.ctrlKey && !ev.altKey && !ev.metaKey) {
                     const focusableElements = this.dlg.DOM.querySelectorAll(this.focusableElementsSelector);
                     const firstFocusableElement = <HTMLElement>focusableElements[0];
                     const lastFocusableElement = <HTMLElement>focusableElements[focusableElements.length - 1];
-                    if (event.shiftKey) {
-                        if (event.target === firstFocusableElement) {
-                            event.preventDefault();
-                            event.stopImmediatePropagation();
+                    if (ev.shiftKey) {
+                        if (ev.target === firstFocusableElement) {
+                            ev.preventDefault();
+                            ev.stopImmediatePropagation();
                             lastFocusableElement?.focus?.();
                         }
                     } else {
-                        if (event.target === lastFocusableElement) {
-                            event.preventDefault();
-                            event.stopImmediatePropagation();
+                        if (ev.target === lastFocusableElement) {
+                            ev.preventDefault();
+                            ev.stopImmediatePropagation();
                             firstFocusableElement?.focus?.();
                         }
                     }

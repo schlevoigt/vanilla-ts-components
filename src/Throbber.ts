@@ -12,7 +12,7 @@ export class Throbber<EventMap extends HTMLElementEventMap = HTMLElementEventMap
     protected _active: boolean;
 
     /**
-     * Create throbber component.
+     * Create Throbber component.
      * @param active `true` if the throbber is active (showing an animation), otherwise `false`.
      */
     constructor(active: boolean = true) {

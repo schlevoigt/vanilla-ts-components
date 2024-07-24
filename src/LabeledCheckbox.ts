@@ -40,7 +40,7 @@ export class LabeledCheckbox<EventMap extends LabeledCheckboxEventMap = LabeledC
             .on("checked", (ev) => {
                 // ev.preventDefault();
                 ev.stopImmediatePropagation();
-                this.emit(new CheckedEvent("checked", this, { Checked: ev.detail.Checked })); // eslint-disable-line jsdoc/require-jsdoc
+                this.emit(new CheckedEvent("checked", this, { Checked: ev.$.Checked })); // eslint-disable-line jsdoc/require-jsdoc
             });
         (this.lblPosition === LabelPosition.START) || (this.lblPosition === LabelPosition.TOP)
             ? this.ui.append(this.component)

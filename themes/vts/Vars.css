@@ -41,7 +41,8 @@
     --input-border-radius: var(--2px);
     --border-radius-normal: var(--6px);
     --border-radius-small: var(--3px);
-    --border-radius-large: var(--13px)
+    --border-radius-large: var(--13px);
+    --busy-overlay-size: 5rem;
     /* #endregion */
 
     /* #region Colors */
@@ -66,6 +67,8 @@
     --menu-font-color: hsl(0 0% 20.8%);
     --menu-font-color-focused: hsl(0 0% 100%);
     --menu-font-color-hint: hsla(0 0% 0% / 30%);
+    --busy-overlay-color: hsl(214 100% 67.5%);
+    --busy-overlay-backdrop-color: hsla(0 0% 0% / 0.1);
     /* #endregion */
 
     /* delete.svg */

@@ -9,7 +9,7 @@ export type MenuEntry = MenuItem | MenuHeading | MenuSeparator;
  * Menu item component, an entry in a popup menu.
  */
 export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<LiUl, EventMap> {
-    protected checked_: boolean = false;
+    protected _checked: boolean = false;
     protected _hint: Span;
     protected _content: Span;
 
@@ -154,7 +154,7 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      * Get/set the `Checked` state of the menu item.
      */
     public get Checked(): boolean {
-        return this.checked_;
+        return this._checked;
     }
     /** @inheritdoc */
     public set Checked(v: boolean) {
@@ -167,8 +167,8 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      * @returns This instance.
      */
     public checked(checked: boolean) {
-        this.checked_ = checked;
-        this.checked_
+        this._checked = checked;
+        this._checked
             ? this.addClass("checked")
             : this.removeClass("checked");
         return this;
@@ -413,7 +413,7 @@ export class PopupMenu<EventMap extends PopupMenuEventMap = PopupMenuEventMap> e
      *   menu!
      */
     public get Items(): MenuEntry[] {
-        return <MenuEntry[]>this.ui.Children.slice();
+        return <MenuEntry[]>this.ui.Children;
     }
     /** @inheritdoc */
     public set Items(v: MenuEntry[]) {

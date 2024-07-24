@@ -32,7 +32,7 @@ export interface ISteppable {
 export interface IStepper {
     /**
      * Go to index/position `0` of the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and the index/position in
+     * @returns `true` if no event handler has canceled the `step` event and the index/position in
      * the steppable object is set to `0` after stepping, otherwise `false`. `false` is also
      * returned, if `Count` of the steppable object is `0`.\
      * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
@@ -42,7 +42,7 @@ export interface IStepper {
 
     /**
      * Go backward one 'page' in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * @returns `true` if no event handler has canceled the `step` event and if the index/position
      * in the steppable object is set to `Index - PageSize` or `0` after stepping, otherwise
      * `false`. `false` is also returned if the property `PageSize` in the steppable object is `-1`
      * (the object doesn't support paging) or if `Count` of the steppable object is `0`.\
@@ -56,7 +56,7 @@ export interface IStepper {
 
     /**
      * Go backward one position in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * @returns `true` if no event handler has canceled the `step` event and if the index/position
      * in the steppable object is set to `Index - 1` after stepping, otherwise `false`. `false` is
      * also returned, if `Count` of the steppable object is `0`.\
      * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
@@ -66,7 +66,7 @@ export interface IStepper {
 
     /**
      * Go forward one position in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * @returns `true` if no event handler has canceled the `step` event and if the index/position
      * in the steppable object is set to `Index + 1` after stepping, otherwise `false`. `false` is
      * also returned, if `Count` of the steppable object is `0`.\
      * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
@@ -76,7 +76,7 @@ export interface IStepper {
 
     /**
      * Go forward one 'page' in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * @returns `true` if no event handler has canceled the `step` event and if the index/position
      * in the steppable object is set to `Index - PageSize` or `Count - 1` after stepping, otherwise
      * `false`. `false` is also returned if the property `PageSize` in the steppable object is `-1`
      * (the object doesn't support paging) or if `Count` of the steppable object is `0`.\
@@ -90,7 +90,7 @@ export interface IStepper {
 
     /**
      * Go to index/position `Count - 1` of the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and the index/position in
+     * @returns `true` if no event handler has canceled the `step` event and the index/position in
      * the steppable object is set to `Count - 1` after stepping, otherwise `false`. `false` is also
      * returned, if `Count` of the steppable object is `0`.\
      * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
@@ -392,7 +392,7 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
      * - If the index/position is lower than `0` or greater or equal to `Count` of the steppable
      *   object it will always be corrected be in the range of `0`...`Count - 1`.
      * @param index The index/position to step to in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * @returns `true` if no event handler has canceled the `step` event and if the index/position
      * in the steppable object could be set to the required value, otherwise `false`. `false` is
      * also returned, if `Count` of the steppable object is `0`.
      */

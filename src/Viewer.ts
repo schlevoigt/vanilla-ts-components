@@ -100,7 +100,7 @@ export interface ViewerOptions {
     ToolbarHidden?: boolean;
     /**
      * Options for the stepper (also allows the localization of the stepper).\
-     * __Note:__ The `Appearance` is always overwritten depending on the position of the toolbar.
+     * __Note:__ The `Appearance` is always overridden depending on the position of the toolbar.
      * For the toolbar positions `TOP` and `BOTTOM` the stepper appearance is `HORIZONTAL` by
      * default while for the positions `START` and `END` it is `VERTICAL` by default. Both defaults
      * can be set to `HORIZONTAL_ALT`/`VERTICAL_ALT` with `StepperApperanceHorizontalAlt` and
@@ -277,7 +277,7 @@ export interface ViewerEventMap extends HTMLElementEventMap {
      */
     "viewer-step": ViewerStepEvent;
     /**
-     * The viewer has changed its index. This event is purely informative and can't be cancelled.
+     * The viewer has changed its index. This event is purely informative and can't be canceled.
      */
     "viewer-stepped": ViewerStepEvent;
 }
@@ -1501,15 +1501,15 @@ export class Viewer<EventMap extends ViewerEventMap = ViewerEventMap> extends AE
      * @param ev The `pinch-zoom` event.
      */
     protected onPinchZoom(ev: PinchZoomEvent): AnyType {
-        const scale = ev.detail.Scale;
+        const scale = ev.$.Scale;
         if (scale === PINCH_ZOOM_START) {
             this.itemContainer.Content.addClass("pinch-zooming");
             this.pinchZoomStartScale = this.Scale;
         } else if (scale === PINCH_ZOOM_STOP) {
             this.itemContainer.Content.removeClass("pinch-zooming");
         } else {
-            if (ev.detail.EventTarget instanceof HTMLImageElement) {
-                const origin = { clientX: ev.detail.Origin.x, clientY: ev.detail.Origin.y }; // eslint-disable-line jsdoc/require-jsdoc
+            if (ev.$.EventTarget instanceof HTMLImageElement) {
+                const origin = { clientX: ev.$.Origin.x, clientY: ev.$.Origin.y }; // eslint-disable-line jsdoc/require-jsdoc
                 const newScale = this.pinchZoomStartScale * scale;
                 // if (newScale >= 0.01 && newScale <= 4) {
                 if (newScale >= 0.01) {

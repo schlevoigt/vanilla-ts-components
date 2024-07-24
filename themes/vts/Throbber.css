@@ -9,22 +9,15 @@
     border-radius: 50%;
     border-style: solid;
     border-color: var(--border-color-dark);
-    /* `border-width` must be set explicitly. A visually appealing value is `calc(<width> / 6)`. */
+    /* `border-width` must be set explicitly. A visually appealing value is `calc(<width> / 10)`. */
     /* border-width: <value>; */
     border-bottom-color: transparent;
     /* border-left-color: transparent; */
     visibility: hidden;
     &.active {
         visibility: visible;
-        /* `steps(30)` instead of `linear` reduces the CPU load in non-Safari browsers. */
-        animation: throbber-rotate360 2s steps(30) infinite;
+        animation: throbber-rotate360 1.25s linear infinite running;
     }
-}
-/* Currently, Safari seems to be the only browser that performs this simple animation without any
-   noticable CPU load. */
-body.MacOS.WebKit .throbber.active,
-body.MacOS.WebKit .vts-throbber.active {
-    animation: throbber-rotate360 2s linear infinite running;
 }
 @keyframes throbber-rotate360 {
     0% {
