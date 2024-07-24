@@ -6,16 +6,16 @@ import { Button, Div, Span } from "@vanilla-ts/dom";
  * Apperance of the disclosure container.
  */
 export enum DisclosureContainerAppearance {
-    // The header is at the top of the component, the button for disclose/undisclosing is on the
-    // left side of the header
-    TOP_LEFT = 0,
-    TOP_RIGHT,
-    RIGHT_TOP,
-    RIGHT_BOTTOM,
-    BOTTOM_RIGHT,
-    BOTTOM_LEFT,
-    LEFT_BOTTOM,
-    LEFT_TOP,
+    // START = left in `ltr` direction and right in `rtl` direction.
+    // END = right in `ltr` direction and left in `rtl` direction.
+    TOP_START = 0,
+    TOP_END,
+    END_TOP,
+    END_BOTTOM,
+    BOTTOM_END,
+    BOTTOM_START,
+    START_BOTTOM,
+    START_TOP,
 }
 
 /**
@@ -104,7 +104,7 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
         labels: DisclosureContainerLabels = { Captions: ["+", "-"], Titles: ["", ""] }, // eslint-disable-line jsdoc/require-jsdoc
         disclosed: boolean = true,
         weakUndisclosed: boolean = false,
-        appearance: DisclosureContainerAppearance = DisclosureContainerAppearance.TOP_LEFT
+        appearance: DisclosureContainerAppearance = DisclosureContainerAppearance.TOP_START
     ) {
         super();
         super.initialize()
@@ -300,36 +300,36 @@ export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = 
             this._appearance = appearance;
             let clazz: string;
             switch (this._appearance) {
-                case DisclosureContainerAppearance.TOP_LEFT:
-                    clazz = "top-left";
+                case DisclosureContainerAppearance.TOP_START:
+                    clazz = "top-start";
                     break;
-                case DisclosureContainerAppearance.TOP_RIGHT:
-                    clazz = "top-right";
+                case DisclosureContainerAppearance.TOP_END:
+                    clazz = "top-end";
                     break;
-                case DisclosureContainerAppearance.RIGHT_TOP:
-                    clazz = "right-top";
+                case DisclosureContainerAppearance.END_TOP:
+                    clazz = "end-top";
                     break;
-                case DisclosureContainerAppearance.RIGHT_BOTTOM:
-                    clazz = "right-bottom";
+                case DisclosureContainerAppearance.END_BOTTOM:
+                    clazz = "end-bottom";
                     break;
-                case DisclosureContainerAppearance.BOTTOM_LEFT:
-                    clazz = "bottom-left";
+                case DisclosureContainerAppearance.BOTTOM_START:
+                    clazz = "bottom-start";
                     break;
-                case DisclosureContainerAppearance.BOTTOM_RIGHT:
-                    clazz = "bottom-right";
+                case DisclosureContainerAppearance.BOTTOM_END:
+                    clazz = "bottom-end";
                     break;
-                case DisclosureContainerAppearance.LEFT_TOP:
-                    clazz = "left-top";
+                case DisclosureContainerAppearance.START_TOP:
+                    clazz = "start-top";
                     break;
-                case DisclosureContainerAppearance.LEFT_BOTTOM:
-                    clazz = "left-bottom";
+                case DisclosureContainerAppearance.START_BOTTOM:
+                    clazz = "start-bottom";
                     break;
                 default:
                     clazz = "top-left";
                     break;
             }
             this.ui
-                .removeClass("top-left", "top-right", "right-top", "right-bottom", "bottom-left", "bottom-right", "left-top", "left-bottom")
+                .removeClass("top-start", "top-end", "end-top", "end-bottom", "bottom-start", "bottom-end", "start-top", "start-bottom")
                 .addClass(clazz);
         }
         return this;
@@ -424,7 +424,7 @@ export class DisclosureContainerFactory<T> extends ComponentFactory<DisclosureCo
         labels: DisclosureContainerLabels = { Captions: ["+", "-"], Titles: ["", ""] }, // eslint-disable-line jsdoc/require-jsdoc
         disclosed: boolean = true,
         weakUndisclosed: boolean = false,
-        appearance: DisclosureContainerAppearance = DisclosureContainerAppearance.TOP_LEFT,
+        appearance: DisclosureContainerAppearance = DisclosureContainerAppearance.TOP_START,
         data?: T
     ): DisclosureContainer {
         return this.setupComponent(new DisclosureContainer(header, content, labels, disclosed, weakUndisclosed, appearance), data);

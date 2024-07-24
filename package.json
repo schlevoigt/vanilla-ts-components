@@ -35,6 +35,7 @@
     "@vanilla-ts/core": "file:../vanilla-ts-core",
     "@vanilla-ts/dom": "file:../vanilla-ts-dom"
   },
+  "sideEffects": false,
   "devDependencies": {
     "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-terser": "0.4.4",

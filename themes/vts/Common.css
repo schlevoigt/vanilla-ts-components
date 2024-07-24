@@ -2,13 +2,22 @@ html {
     font-family: var(--system-ui);
     font-size: 10pt;
     color: var(--font-color);
+    box-sizing: border-box;
     /* -webkit-font-smoothing: antialiased; */
 }
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
 * {
-    box-sizing: border-box;
     -webkit-user-select: none;
     user-select: none;
     cursor: default;
+}
+.disabled,
+[disabled] {
+    pointer-events: none !important;
 }
 .text-selectable {
     -webkit-user-select: text;

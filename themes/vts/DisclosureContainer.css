@@ -5,6 +5,7 @@
         position: relative;
         display: flex;
         > .disclose {
+            flex-shrink: 0;
             margin: 0;
             padding: 0;
             width: 1rem;
@@ -21,89 +22,97 @@
     > .content-container {
         position: relative;
     }
-    &.top-left,
-    &.top-right {
+    &.top-start,
+    &.top-end {
         flex-direction: column;
     }
-    &.bottom-left,
-    &.bottom-right {
+    &.bottom-start,
+    &.bottom-end {
         flex-direction: column-reverse;
     }
-    &.left-top,
-    &.left-bottom {
+    &.start-top,
+    &.start-bottom {
         flex-direction: row;
     }
-    &.right-top,
-    &.right-bottom {
+    &.end-top,
+    &.end-bottom {
         flex-direction: row-reverse;
     }
-    &.top-left,
-    &.bottom-left {
+    &.top-start,
+    &.bottom-start {
         > .header-container {
             flex-direction: row;
         }
     }
-    &.top-right,
-    &.bottom-right {
+    &.top-end,
+    &.bottom-end {
         > .header-container {
             flex-direction: row-reverse;
         }
     }
-    &.left-top,
-    &.right-top {
+    &.start-top,
+    &.end-top {
         > .header-container {
             flex-direction: column;
         }
     }
-    &.left-bottom,
-    &.right-bottom {
+    &.start-bottom,
+    &.end-bottom {
         > .header-container {
             flex-direction: column-reverse;
         }
     }
-    &.top-left,
-    &.top-right,
-    &.bottom-left,
-    &.bottom-right {
+    &.top-start,
+    &.top-end,
+    &.bottom-start,
+    &.bottom-end {
         > .header-container {
             align-items: center;
         }
     }
-    &.left-top,
-    &.left-bottom,
-    &.right-top,
-    &.right-bottom {
+    &.start-top,
+    &.start-bottom,
+    &.end-top,
+    &.end-bottom {
         > .header-container {
             align-items: center;
         }
     }
     &.disclosed {
-        &.top-left,
-        &.top-right {
+        &.top-start,
+        &.top-end {
             .disclose {
                 /* Arrow down */
                 clip-path: polygon(0% 6.666%, 100% 6.666%, 50% 93.333%);
             }
         }
-        &.bottom-left,
-        &.bottom-right {
+        &.bottom-start,
+        &.bottom-end {
             .disclose {
                 /* Arrow up */
                 clip-path: polygon(0% 93.333%, 50% 6.666%, 100% 93.333%);
             }
         }
-        &.left-top,
-        &.left-bottom {
+        &.start-top,
+        &.start-bottom {
             .disclose {
                 /* Arrow right */
                 clip-path: polygon(6.666% 0%, 93.333% 50%, 6.666% 100%);
+                &:dir(rtl) {
+                    /* Arrow left */
+                    clip-path: polygon(6.666% 50%, 93.333% 0%, 93.333% 100%);
+                }
             }
         }
-        &.right-top,
-        &.right-bottom {
+        &.end-top,
+        &.end-bottom {
             .disclose {
                 /* Arrow left */
                 clip-path: polygon(6.666% 50%, 93.333% 0%, 93.333% 100%);
+                &:dir(rtl) {
+                    /* Arrow right */
+                    clip-path: polygon(6.666% 0%, 93.333% 50%, 6.666% 100%);
+                }
             }
         }
     }
@@ -111,48 +120,61 @@
         > .content-container {
             display: none;
         }
-        &.top-left,
-        &.bottom-left {
+        &.top-start,
+        &.bottom-start {
             .disclose {
                 /* Arrow right */
                 clip-path: polygon(6.666% 0%, 93.333% 50%, 6.666% 100%);
+                &:dir(rtl) {
+                    /* Arrow left */
+                    clip-path: polygon(6.666% 50%, 93.333% 0%, 93.333% 100%);
+                }
             }
         }
-        &.top-right,
-        &.bottom-right {
+        &.top-end,
+        &.bottom-end {
             .disclose {
                 /* Arrow left */
                 clip-path: polygon(6.666% 50%, 93.333% 0%, 93.333% 100%);
+                &:dir(rtl) {
+                    /* Arrow right */
+                    clip-path: polygon(6.666% 0%, 93.333% 50%, 6.666% 100%);
+                }
             }
         }
-        &.left-top,
-        &.right-top {
+        &.start-top,
+        &.end-top {
             .disclose {
                 /* Arrow down */
                 clip-path: polygon(0% 6.666%, 100% 6.666%, 50% 93.333%);
             }
         }
-        &.left-bottom,
-        &.right-bottom {
+        &.start-bottom,
+        &.end-bottom {
             .disclose {
                 /* Arrow up */
                 clip-path: polygon(0% 93.333%, 50% 6.666%, 100% 93.333%);
             }
         }
     }
-    &.right-top,
-    &.right-bottom {
+    &.end-top,
+    &.end-bottom {
         .header-content {
             writing-mode: vertical-lr;
+            &:dir(rtl) {
+                transform: rotate(180deg);
+            }
             /* transform: rotate(180deg); */
             /* transform-origin: top left 0; */
         }
     }
-    &.left-top,
-    &.left-bottom {
+    &.start-top,
+    &.start-bottom {
         .header-content {
             writing-mode: vertical-lr;
-            transform: rotate(180deg);
+            &:not(:dir(rtl)) {
+                transform: rotate(180deg);
+            }
         }
     }
 }
