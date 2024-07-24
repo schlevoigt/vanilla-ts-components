@@ -141,7 +141,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
     public horizontal(horizontal: boolean): this {
         if (horizontal !== this.#_horizontal) {
             this.#_horizontal = horizontal;
-            this.#_horizontal ? this.addClass("horizontal") : this.removeClass("horizontal");
+            this.#_horizontal ? this.#_dom_.classList.add("horizontal") : this.#_dom_.classList.remove("horizontal");
             this.#_horizontal ? this.#_dom_.appendChild(this.#hBarOverlay) : this.#hBarOverlay.remove();
         }
         return this;
@@ -166,7 +166,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
     public vertical(vertical: boolean): this {
         if (vertical !== this.#_vertical) {
             this.#_vertical = vertical;
-            this.#_vertical ? this.addClass("vertical") : this.removeClass("vertical");
+            this.#_vertical ? this.#_dom_.classList.add("vertical") : this.#_dom_.classList.remove("vertical");
             this.#_vertical ? this.#_dom_.appendChild(this.#vBarOverlay) : this.#vBarOverlay.remove();
         }
         return this;
@@ -201,13 +201,13 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
                 this.#_dom_.removeEventListener("scroll", this.#onScrollEndListener, this.#passiveTrue);
                 this.#hBarOverlay.remove();
                 this.#vBarOverlay.remove();
-                this.addClass("native");
+                this.#_dom_.classList.add("native");
             } else {
                 this.#scrollable.addEventListener("scroll", this.#onScrollListener, this.#passiveTrue);
                 this.#scrollable.addEventListener("scroll", this.#onScrollEndListener, this.#passiveTrue);
                 this.#_dom_.insertBefore(this.#vBarOverlay, this.#scrollable);
                 this.#_dom_.insertBefore(this.#hBarOverlay, this.#vBarOverlay);
-                this.removeClass("native");
+                this.#_dom_.classList.remove("native");
                 this.#syncScrollBarGeometry();
             }
             // Workaround for WebKit/Safari bug.
@@ -516,7 +516,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
             hboWidth = Math.max(w - this.#hBarStartOffset - this.#hBarReduceWidth, 0) + "px";
             this.#hBarOverlay.style.insetInlineStart = this.#hBarStartOffset + this.#hBarReduceWidth + "px";
             hasHOff = w >= sw;
-            hasHOff ? this.addClass("h-off") : this.removeClass("h-off");
+            hasHOff ? this.#_dom_.classList.add("h-off") : this.#_dom_.classList.remove("h-off");
             hasHOff ? this.#vBarOverlay.style.height = "" : undefined;
             this.#hBarThumb.style.width = w < sw ? (w / sw * 100) + "%" : "100%";
         } else {
@@ -529,7 +529,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
             vboHeight = Math.max(h - this.#vBarStartOffset - this.#vBarReduceHeight, 0) + "px";
             this.#vBarOverlay.style.insetBlockStart = this.#vBarStartOffset + this.#vBarReduceHeight + "px";
             hasVOff = h >= sh;
-            hasVOff ? this.addClass("v-off") : this.removeClass("v-off");
+            hasVOff ? this.#_dom_.classList.add("v-off") : this.#_dom_.classList.remove("v-off");
             hasVOff ? this.#hBarOverlay.style.width = "" : undefined;
             this.#vBarThumb.style.height = h < sh ? (h / sh * 100) + "%" : "100%";
         } else {
@@ -562,7 +562,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
      * @param _event The scroll event.
      */
     #syncScrollBars(_event?: Event): void {
-        this.addClass("scrolling");
+        this.#_dom_.classList.add("scrolling");
         this.#repositionScrollBars();
     }
 
@@ -668,7 +668,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
             this.#draggingBarRect.height = this.#draggingThumb.parentElement!.offsetHeight;
             this.#draggingThumb.addEventListener("pointermove", this.#fncOnDragThumbPointerMove, this.#passiveTrue);
             this.#draggingThumb.setPointerCapture(event.pointerId);
-            this.addClass("dragging");
+            this.#_dom_.classList.add("dragging");
         }
     }
 
@@ -717,7 +717,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
                 this.#dragStart.y = -Infinity;
                 this.#dragStartElementPos.x = -Infinity;
                 this.#dragStartElementPos.y = -Infinity;
-                this.removeClass("dragging");
+                this.#_dom_.classList.remove("dragging");
             }, 1);
         }
     }
@@ -786,19 +786,19 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
         clearTimeout(this.#onScrollEndTimeout);
         this.#onScrollEndTimeout = setTimeout(() => {
             if ((this.#lastScrollPos.x !== this.#scrollable.scrollLeft) || (this.#lastScrollPos.y !== this.#scrollable.scrollTop)) {
-                this.removeClass("scrolling");
+                this.#_dom_.classList.remove("scrolling");
                 return;
             }
             const rafScroll = () => { // eslint-disable-line jsdoc/require-jsdoc
                 if (!this.#isPointerDown) {
-                    this.removeClass("scrolling");
+                    this.#_dom_.classList.remove("scrolling");
                     return;
                 }
                 const thumbRect = this.#contScrollHorizontal ?
                     new DOMRect(this.#hBarThumb.offsetLeft, this.#hBarThumb.offsetTop, this.#hBarThumb.offsetWidth, this.#hBarThumb.offsetHeight)
                     : new DOMRect(this.#vBarThumb.offsetLeft, this.#vBarThumb.offsetTop, this.#vBarThumb.offsetWidth, this.#vBarThumb.offsetHeight);
                 if (this.#rectContains(thumbRect, this.#contScrollStartPos)) {
-                    this.removeClass("scrolling");
+                    this.#_dom_.classList.remove("scrolling");
                     return;
                 }
                 const contScrollDistance = this.#contScrollBackwards ? -this.#scrollPageLength / 10 : this.#scrollPageLength / 10;
@@ -845,17 +845,8 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
                 : Math.max(Math.min(n, rangeEnd1), rangeEnd2);
     }
 
-    /**
-     * \
-     * \
-     * _Note:_ Compared to regular `Div` component `ScrollContainer` becomes unusable after calling
-     * `clear()` since all inner opaque components/elements (like the scroll bars) are also removed.
-     * To 'empty' the content of `ScrollContainer` use `remove()`/`extract()` or `clearContent()`
-     * (recommended) instead.
-     * @see `clearContent()`
-     * @inheritdoc 
-     */
-    public override clear(): this {
+    /** @inheritdoc */
+    public override clearOwner(): this {
         this.#mutationObserver.disconnect();
         this.#resizeObserver.disconnect();
         this.#scrollable.removeEventListener("scroll", this.#onScrollListener, this.#passiveTrue);
@@ -878,7 +869,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
         this.#vBarOverlay.remove();
         this.#vBar.remove();
         this.#vBarThumb.remove();
-        return super.clear();
+        return super.clearOwner();
     }
 
     static {
