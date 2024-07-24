@@ -1,4 +1,4 @@
-import { AChildren, ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_EVENT_INIT_DICT, HTMLElementWithChildren, IElementWithChildrenComponent, INodeComponent, mixin, NullableString } from "@vanilla-ts/core";
+import { AChildren, ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_EVENT_INIT_DICT, HTMLElementWithChildren, IElementWithChildrenComponent, INodeComponent, mixin, NullableString, Phrase } from "@vanilla-ts/core";
 import { Button, Div, Span } from "@vanilla-ts/dom";
 
 
@@ -607,28 +607,35 @@ export type TabCloseLabels = {
  * unmounted/mounted (for example to store/restore its scroll position). This class passes the
  * respective events forward to all of its children (the actual content of the tab).\
  * __Note:__ The `parent` given to `onBeforeMount()` and `onDidMount()` is not the Tab instance
- * itself but the inner content container!
+ * itself but the inner opaque content container which holds an instance of `TabContentContainer` as
+ * its only child!
  */
 class TabContentContainer extends Div {
     /** @inheritdoc */
+    constructor(protected ownerTab: Tab, ...phrase: Phrase[]) {
+        super(...phrase);
+        phrase.length === 0 || this.phrase(...phrase);
+    }
+
+    /** @inheritdoc */
     override onBeforeUnmount(): void {
         super.onBeforeUnmount();
-        for (const child of this.Children) { child.onBeforeUnmount(); }
+        for (const child of this.ownerTab.Children) { child.onBeforeUnmount(); }
     }
     /** @inheritdoc */
     override onDidUnmount(): void {
         super.onDidUnmount();
-        for (const child of this.Children) { child.onDidUnmount(); }
+        for (const child of this.ownerTab.Children) { child.onDidUnmount(); }
     }
     /** @inheritdoc */
     override onBeforeMount(parent: IElementWithChildrenComponent<HTMLElementWithChildren>): void {
         super.onBeforeMount(parent);
-        for (const child of this.Children) { child.onBeforeMount(this); }
+        for (const child of this.ownerTab.Children) { child.onBeforeMount(this); }
     }
     /** @inheritdoc */
     override onDidMount(parent: IElementWithChildrenComponent<HTMLElementWithChildren>): void {
         super.onDidMount(parent);
-        for (const child of this.Children) { child.onDidMount(this); }
+        for (const child of this.ownerTab.Children) { child.onDidMount(this); }
     }
 }
 
@@ -886,7 +893,7 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
         this.closeBtn = new Button()
             .addClass("close")
             .on("click", () => this.tabGroup?.requestCloseTab(this));
-        this.contentContainer = new TabContentContainer().addClass("content-container");
+        this.contentContainer = new TabContentContainer(this).addClass("content-container");
         // Set target DOM for the `IChildren` mixin!!
         this.setChildrenDOMTarget(this.contentContainer.DOM);
         return this;
