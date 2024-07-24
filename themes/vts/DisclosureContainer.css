@@ -79,28 +79,28 @@
     &.disclosed {
         &.top-left,
         &.top-right {
-            & .disclose {
+            .disclose {
                 /* Arrow down */
                 clip-path: polygon(0% 6.666%, 100% 6.666%, 50% 93.333%);
             }
         }
         &.bottom-left,
         &.bottom-right {
-            & .disclose {
+            .disclose {
                 /* Arrow up */
                 clip-path: polygon(0% 93.333%, 50% 6.666%, 100% 93.333%);
             }
         }
         &.left-top,
         &.left-bottom {
-            & .disclose {
+            .disclose {
                 /* Arrow right */
                 clip-path: polygon(6.666% 0%, 93.333% 50%, 6.666% 100%);
             }
         }
         &.right-top,
         &.right-bottom {
-            & .disclose {
+            .disclose {
                 /* Arrow left */
                 clip-path: polygon(6.666% 50%, 93.333% 0%, 93.333% 100%);
             }
@@ -112,28 +112,28 @@
         }
         &.top-left,
         &.bottom-left {
-            & .disclose {
+            .disclose {
                 /* Arrow right */
                 clip-path: polygon(6.666% 0%, 93.333% 50%, 6.666% 100%);
             }
         }
         &.top-right,
         &.bottom-right {
-            & .disclose {
+            .disclose {
                 /* Arrow left */
                 clip-path: polygon(6.666% 50%, 93.333% 0%, 93.333% 100%);
             }
         }
         &.left-top,
         &.right-top {
-            & .disclose {
+            .disclose {
                 /* Arrow down */
                 clip-path: polygon(0% 6.666%, 100% 6.666%, 50% 93.333%);
             }
         }
         &.left-bottom,
         &.right-bottom {
-            & .disclose {
+            .disclose {
                 /* Arrow up */
                 clip-path: polygon(0% 93.333%, 50% 6.666%, 100% 93.333%);
             }
@@ -141,7 +141,7 @@
     }
     &.right-top,
     &.right-bottom {
-        & .header-content {
+        .header-content {
             writing-mode: vertical-lr;
             /* transform: rotate(180deg); */
             /* transform-origin: top left 0; */
@@ -149,7 +149,7 @@
     }
     &.left-top,
     &.left-bottom {
-        & .header-content {
+        .header-content {
             writing-mode: vertical-lr;
             transform: rotate(180deg);
         }

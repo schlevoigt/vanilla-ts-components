@@ -1,23 +1,58 @@
 .vts-labeled-text-input {
     display: flex;
-    &.top,
-    &.bottom {
-        flex-direction: column;
+    position: relative;
+    margin-block: 0.25rem;
+    background-color: inherit;
+    > label {
+        flex-shrink: 0;
+        margin: 0;
+        background-color: inherit;
     }
-    &.right,
-    &.left {
+    > input {
+        margin: 0;
+        padding: 0;
+    }
+    /* #region start/end */
+    &.p-start,
+    &.p-end {
         flex-direction: row;
+        align-items: center;
     }
-    &.top.start > .vts-label,
-    &.bottom.start > .vts-label {
+    &.p-start > label {
+        margin-inline-end: 0.5rem;
+    }
+    &.p-end > label {
+        margin-inline-start: 0.5rem;
+    }
+    /* #endregion */
+    /* #region top/bottom */
+    &.p-top,
+    &.p-bottom {
+        flex-direction: column;
+        justify-items: start
+    }
+    &.p-top > label {
+        margin-block-end: 0.5rem;
+    }
+    &.p-bottom > label {
+        margin-block-start: 0.5rem;
+    }
+    /* #endregion */
+    /* #region common */
+    &:first-child {
+        margin-block-start: 0;
+    }
+    &:last-child {
+        margin-block-end: 0;
+    }
+    &.a-start > label {
         text-align: start;
     }
-    &.top.center > .vts-label,
-    &.bottom.center > .vts-label {
+    &.a-center > label {
         text-align: center;
     }
-    &.top.end > .vts-label,
-    &.top.bottom > .vts-label {
+    &.a-end > label {
         text-align: end;
     }
+    /* #endregion */
 }

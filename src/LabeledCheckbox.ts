@@ -17,7 +17,10 @@ export interface LabeledCheckboxEventMap extends HTMLElementEventMap {
  */
 export class LabeledCheckbox<EventMap extends LabeledCheckboxEventMap = LabeledCheckboxEventMap> extends LabeledInputComponent<Checkbox, EventMap> {
     /**
-     * Create LabeledCheckbox component.
+     * Create LabeledCheckbox component.\
+     * __Note:__ Although all possible combinations of `LabelPosition` and `LabelAlignment` are
+     * implemented, using settings other than `LabelPosition.START`, `LabelPosition.END` and
+     * `LabelAlignment.START` can lead to a visually rather weird appearance.
      * @param labelPhrase The phrasing content for the label.
      * @param id The `id` attribute of the checkbox input element.
      * @param value The value of the checkbox input element.
@@ -103,7 +106,10 @@ export class LabeledCheckbox<EventMap extends LabeledCheckboxEventMap = LabeledC
  */
 export class LabeledCheckboxFactory<T> extends ComponentFactory<LabeledCheckbox> {
     /**
-     * Create, set up and return LabeledCheckbox component.
+     * Create, set up and return LabeledCheckbox component.\
+     * __Note:__ Although all possible combinations of `LabelPosition` and `LabelAlignment` are
+     * implemented, using settings other than `LabelPosition.START`, `LabelPosition.END` and
+     * `LabelAlignment.START` can lead to a visually rather weird appearance.
      * @param labelPhrase The phrasing content for the label.
      * @param id The `id` attribute of the checkbox input element.
      * @param value The value of the checkbox input element.

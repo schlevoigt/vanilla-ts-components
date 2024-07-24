@@ -24,7 +24,7 @@ export class LabeledTemporalInput<EventMap extends HTMLElementEventMap = HTMLEle
      *   nothing.
      */
     constructor(labelPhrase: Phrase | Phrase[], temporalType: TemporalType, id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean) {
-        super(labelPhrase, id, lblPosition, lblAlignment, labelAction);
+        super(labelPhrase, id, lblPosition ?? LabelPosition.START, lblAlignment, labelAction);
         this.ui.append(this.component = new TemporalInput(temporalType, id, value, name));
     }
 
@@ -80,13 +80,6 @@ export class LabeledTemporalInput<EventMap extends HTMLElementEventMap = HTMLEle
         this.component.stepDown(n);
         return this;
     }
-
-    /** @inheritdoc */
-    // protected override buildUI(id?: string, value?: string, name?: string, labelAction?: boolean): this {
-    //     super.buildUI(id, value, name, labelAction);
-    //     // this.ui.append(this.component = new TemporalInput(temporalType, id, value, name))
-    //     return this;
-    // }
 }
 
 /**

@@ -2,40 +2,37 @@
     display: flex;
     margin: 0;
     padding: 0;
-    background-color: inherit;
     &.top,
-    &.right,
+    &.end,
     &.bottom,
-    &.left {
+    &.start {
         > .tab-headers:empty {
-            border-top: none;
-            border-right: none;
-            border-bottom: none;
-            border-left: none;
+            border-block-start: none;
+            border-inline-end: none;
+            border-block-end: none;
+            border-inline-start: none;
         }
     }
     > .tab-headers {
         display: flex;
-        /* background-color: inherit; */
         > .header-container {
             display: flex;
-            margin: 0;
-            padding: 0.5rem;
-            background-color: lightgray;
+            border-radius: 0.5rem;
             white-space: nowrap;
+            border: var(--1px) solid var(--border-color);
+            background-color: var(--panel-background-color-light);
             &.active {
-                background-color: inherit;
+                border: var(--1px) solid var(--border-color-dark);
+                background-color: var(--panel-background-color-dark);
             }
             &:hover:not(.active) {
-                /* background-color: inherit; */
+                border: var(--1px) solid var(--border-color-dark);
                 filter: contrast(1.15);
             }
             > .header-content {
                 flex-grow: 1;
                 text-overflow: ellipsis;
                 overflow: hidden;
-                /* background-color: orange; */
-                /* background-color: inherit; */
             }
             > .close {
                 flex-grow: 0;
@@ -60,23 +57,18 @@
     &.bottom {
         > .tab-headers {
             overflow-x: auto;
-            border-right: 0.1rem solid darkgray;
-            border-left: 0.1rem solid darkgray;
             > .header-container {
                 flex-direction: row-reverse;
                 align-items: center;
-                border-right: 0.1rem solid darkgray;
-                /* &:last-of-type {
-                    border-right: none;
-                } */
+                padding: 0.25rem 0.5rem;
                 > .header-content {
                     min-width: 7rem;
                     max-width: 21rem;
                     width: 100%;
-                    /* background-color: inherit; */
                 }
                 > .close {
-                    margin: 0 0 0 1rem;
+                    margin-block: 0 0;
+                    margin-inline: 1rem 0;
                 }
             }
         }
@@ -84,26 +76,38 @@
     &.top {
         flex-direction: column;
         > .tab-headers {
-            border-top: 0.1rem solid darkgray;
-            /* > .header-container {} */
+            > .header-container {
+                margin-block-start: 0;
+                margin-block-end: 0.5rem;
+                margin-inline-start: 0.25rem;
+                &:first-child {
+                    margin-inline-start: 0;
+                }
+                margin-inline-end: 0;
+            }
         }
     }
     &.bottom {
         flex-direction: column-reverse;
-        border-bottom: 0.1rem solid darkgray;
-        /* > .tab-headers {
-            > .header-container {}
-        } */
+        > .tab-headers {
+            > .header-container {
+                margin-block-start: 0.5rem;
+                margin-block-end: 0;
+                margin-inline-start: 0.25rem;
+                &:first-child {
+                    margin-inline-start: 0;
+                }
+                margin-inline-end: 0;
+            }
+        }
     }
-    &.right,
-    &.left {
-        /* flex-direction: row; */
+    &.end,
+    &.start {
         > .tab-headers {
             overflow-y: auto;
-            border-top: 0.1rem solid darkgray;
-            border-bottom: 0.1rem solid darkgray;
             > .header-container {
                 align-items: center;
+                padding: 0.5rem 0.25rem;
                 > .header-content {
                     min-height: 7rem;
                     max-height: 21rem;
@@ -112,39 +116,44 @@
             }
         }
     }
-    &.right {
+    &.end {
         flex-direction: row-reverse;
         > .tab-headers {
             flex-direction: column;
-            border-right: 0.1rem solid darkgray;
             > .header-container {
                 flex-direction: column-reverse;
-                border-bottom: 0.1rem solid darkgray;
-                /* &:last-of-type {
-                    border-bottom: none;
-                } */
+                margin-block: 0 0.25rem;
+                &:last-child {
+                    margin-block-end: 0;
+                }
+                margin-inline: 0.5rem 0;
+                > :dir(rtl).header-content {
+                    transform: rotate(180deg);
+                }
                 > .close {
-                    margin: 1rem 0 0 0;
+                    margin-block: 1rem 0;
+                    margin-inline: 0;
                 }
             }
         }
     }
-    &.left {
+    &.start {
         flex-direction: row;
         > .tab-headers {
             flex-direction: column-reverse;
-            border-left: 0.1rem solid darkgray;
             > .header-container {
                 flex-direction: column;
-                border-top: 0.1rem solid darkgray;
-                /* &:last-of-type {
-                    border-top: none;
-                } */
-                > .header-content {
+                margin-block: 0 0.25rem;
+                &:first-child {
+                    margin-block-end: 0;
+                }
+                margin-inline: 0 0.5rem;
+                > :dir(ltr).header-content {
                     transform: rotate(180deg);
                 }
                 > .close {
-                    margin: 0 0 1rem 0;
+                    margin-block: 0 1rem;
+                    margin-inline: 0;
                 }
             }
         }
@@ -152,13 +161,12 @@
     > .tab-content {
         flex-grow: 1;
         display: flex;
-        border: 0.1rem solid darkgray;
+        border: var(--1px) solid var(--border-color);
         padding: 0.5rem;
-        /* background-color: inherit; */
+        border-radius: 0.25rem;
         > .content-container {
             flex-grow: 1;
             position: relative;
-            /* background-color: inherit; */
         }
     }
 }

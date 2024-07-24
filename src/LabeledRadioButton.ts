@@ -17,7 +17,10 @@ export interface LabeledRadioButtonEventMap extends HTMLElementEventMap {
  */
 export class LabeledRadioButton<EventMap extends LabeledRadioButtonEventMap = LabeledRadioButtonEventMap> extends LabeledInputComponent<RadioButton, EventMap> {
     /**
-     * Create LabeledRadioButton component.
+     * Create LabeledRadioButton component.\
+     * __Note:__ Although all possible combinations of `LabelPosition` and `LabelAlignment` are
+     * implemented, using settings other than `LabelPosition.START`, `LabelPosition.END` and
+     * `LabelAlignment.START` can lead to a visually rather weird appearance.
      * @param labelPhrase The phrasing content for the label.
      * @param id The `id` attribute of the radio button input element.
      * @param value The value of the radio button input element.
@@ -102,7 +105,10 @@ export class LabeledRadioButton<EventMap extends LabeledRadioButtonEventMap = La
  */
 export class LabeledRadioButtonFactory<T> extends ComponentFactory<LabeledRadioButton> {
     /**
-     * Create, set up and return LabeledRadioButton component.
+     * Create, set up and return LabeledRadioButton component.\
+     * __Note:__ Although all possible combinations of `LabelPosition` and `LabelAlignment` are
+     * implemented, using settings other than `LabelPosition.START`, `LabelPosition.END` and
+     * `LabelAlignment.START` can lead to a visually rather weird appearance.
      * @param labelPhrase The phrasing content for the label.
      * @param id The `id` attribute of the radio button input element.
      * @param value The value of the radio button input element.
