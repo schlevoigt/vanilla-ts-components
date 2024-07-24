@@ -1,4 +1,4 @@
-import { ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, IElementWithChildrenComponent, INodeComponent } from "@vanilla-ts/core";
+import { ACustomComponentEvent, AElementComponentWithInternalUI, ComponentFactory, DEFAULT_CANCELABLE_EVENT_INIT_DICT, IElementWithChildrenComponent, INodeComponent } from "@vanilla-ts/core";
 import { Button, Div, P, Span } from "@vanilla-ts/dom";
 
 
@@ -39,10 +39,20 @@ export type DisclosureContainerLabels = {
 /**
  * Custom 'disclose' event for disclosure containers.
  */
-export class DiscloseEvent<D extends object = {
+export class DiscloseEvent extends ACustomComponentEvent<"disclose", DisclosureContainer, {
     /** `true`, if the disclosure container is disclosed, otherwise `false`. */
     Disclosed: boolean;
-}> extends ACustomComponentEvent<"disclose", DisclosureContainer, D> { }
+}> {
+    /**
+     * Create DiscloseEvent event.
+     * @param sender The event emitter (always `DisclosureContainer`).
+     * @param disclosed `true`, if the DisclosureContainer was disclosed, otherwise `false`.
+     * @param customEventInitDict Optional event properties.
+     */
+    constructor(sender: DisclosureContainer, disclosed: boolean, customEventInitDict: EventInit = DEFAULT_CANCELABLE_EVENT_INIT_DICT) {
+        super("disclose", sender, { Disclosed: disclosed }, customEventInitDict); // eslint-disable-line jsdoc/require-jsdoc
+    }
+}
 
 /**
  * Additional event(s) for `DisclosureContainer`.
@@ -58,7 +68,7 @@ export interface DisclosureContainerEventMap extends HTMLElementEventMap {
 /**
  * Container whose content can be disclosed/undisclosed.
  */
-export class DisclosureContainer extends AElementComponentWithInternalUI<Div, DisclosureContainerEventMap> {
+export class DisclosureContainer<EventMap extends DisclosureContainerEventMap = DisclosureContainerEventMap> extends AElementComponentWithInternalUI<Div, EventMap> {
     protected headerContainer: IElementWithChildrenComponent<HTMLDivElement>;
     protected discloseButton: Button;
     protected headerContent: IElementWithChildrenComponent<HTMLDivElement>;
@@ -69,7 +79,7 @@ export class DisclosureContainer extends AElementComponentWithInternalUI<Div, Di
     protected _labels: DisclosureContainerLabels;
 
     /**
-     * Creates a disclosure container.
+     * Creates DisclosureContainer component.
      * @param header The content for the header of the disclosure container (components or string,
      * in the case of a string, the header content is a `Span` component with the string as the
      * content).
@@ -221,7 +231,7 @@ export class DisclosureContainer extends AElementComponentWithInternalUI<Div, Di
      */
     public disclosed(disclosed: boolean): this {
         if (disclosed !== this._disclosed) {
-            if (!this._dom.dispatchEvent(new DiscloseEvent("disclose", this, { Disclosed: disclosed }, { bubbles: true, cancelable: true, composed: true }))) { // eslint-disable-line jsdoc/require-jsdoc
+            if (!this.dispatch(new DiscloseEvent(this, disclosed))) { // eslint-disable-line jsdoc/require-jsdoc
                 return this;
             }
             this._disclosed = disclosed;

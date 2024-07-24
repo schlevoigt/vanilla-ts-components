@@ -1,4 +1,4 @@
-import { AElementComponentWithInternalUI, ComponentFactory, IChildren, IElementWithChildrenComponent, IFragment, IIsElementComponent, INodeComponent } from "@vanilla-ts/core";
+import { AChildren, AElementComponentWithInternalUI, ComponentFactory, IElementWithChildrenComponent, INodeComponent, mixin } from "@vanilla-ts/core";
 import { Div } from "@vanilla-ts/dom";
 
 
@@ -43,7 +43,7 @@ export type ScrollbarAdjustment = { Offset: number | INodeComponent<HTMLElement>
  *   `AElementComponentWithInternalUI`, `someChild.Parent?.Parent?.Parent` must be called to reach
  *   the containing `ScrollContainer` instance!
  */
-export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap> implements IChildren {
+export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap> { // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
     #_dom_: HTMLDivElement;
     #contentContainer: Div;
     #scrollable: HTMLDivElement;
@@ -351,78 +351,6 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
         return this.#contentContainer;
     }
 
-    /////////////////////////////
-    // #region IChildren
-    /** @inheritdoc */
-    public get Children(): INodeComponent<Node>[] {
-        return this.#contentContainer.Children;
-    }
-
-    /** @inheritdoc */
-    public get ElementChildren(): IIsElementComponent[] {
-        return this.#contentContainer.ElementChildren;
-    }
-
-    /** @inheritdoc */
-    public get First(): INodeComponent<Node> | undefined {
-        return this.#contentContainer.First;
-    }
-
-    /** @inheritdoc */
-    public get Last(): INodeComponent<Node> | undefined {
-        return this.#contentContainer.Last;
-    }
-
-    /** @inheritdoc */
-    public append(...components: INodeComponent<Node>[]): this {
-        this.#contentContainer.append(...components);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public appendFragment(fragment: IFragment): this {
-        this.#contentContainer.appendFragment(fragment);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public insert(at: number | INodeComponent<Node>, ...components: INodeComponent<Node>[]): this {
-        this.#contentContainer.insert(at, ...components);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public insertFragment(at: number | INodeComponent<Node>, fragment: IFragment): this {
-        this.insertFragment(at, fragment);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public remove(...components: INodeComponent<Node>[]): this {
-        this.#contentContainer.remove(...components);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public extract(to: INodeComponent<Node>[], ...components: INodeComponent<Node>[]): this {
-        this.#contentContainer.extract(to, ...components);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public moveTo(target: IChildren, ...components: INodeComponent<Node>[]): this {
-        this.#contentContainer.moveTo(target, ...components);
-        return this;
-    }
-
-    /** @inheritdoc */
-    public moveToAt(target: IChildren, at: number | INodeComponent<Node>, ...components: INodeComponent<Node>[]): this {
-        this.#contentContainer.moveToAt(target, at, ...components);
-        return this;
-    }
-    // #endregion IChildren
-    /////////////////////////////
-
     /**
      * Removes _and disposes_ all regular children from the scroll container.
      * @returns This instance.
@@ -479,6 +407,8 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
         // Container for content elements.
         this.#contentContainer = new Div()
             .addClass("content");
+        // Set target DOM for the `IChildren` mixin!!
+        this.setChildrenDOMTarget(this.#contentContainer.DOM);
         this.#scrollable = this.#contentContainer.DOM;
         // Sync scroll bars on scrolling and detect the end of a scroll process.
         this.#scrollable.addEventListener("scroll", this.#onScrollListener, this.#passiveTrue);
@@ -950,7 +880,15 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
         this.#vBarThumb.remove();
         return super.clear();
     }
+
+    static {
+        /** Mixin the IChildren implementation (which targets `this.#contentContainer`). */
+        mixin(false, ScrollContainer, AChildren);
+    }
 }
+
+/** Augment class definition with `IChildren` (see `static`). */
+export interface ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<Div, EventMap>, AChildren<HTMLElement, EventMap> { }
 
 /**
  * Factory for ScrollContainer components.

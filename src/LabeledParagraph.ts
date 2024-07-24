@@ -1,5 +1,5 @@
-import { ComponentFactory } from "@vanilla-ts/core";
-import { P, Span } from "@vanilla-ts/dom";
+import { ComponentFactory, Phrase } from "@vanilla-ts/core";
+import { Div, P, Span } from "@vanilla-ts/dom";
 import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledComponent.js";
 
 
@@ -12,31 +12,68 @@ import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledCompon
  * Role:       User
  * ```
  * The contained paragraph element itself is a compoment (`P`) so it can be used to display styled
- * text by, for example, appending `Span`, `Em` and other components to it.
+ * text by, for example, appending `Span`, `Em` and other components to it. The same applies for the
+ * label, which is a `Span` component.
+ * @inheritdoc
  */
-export class LabeledParagraph extends LabeledComponent<Span> {
-    protected paragraph: P;
-
+export class LabeledParagraph<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledComponent<Span, P, EventMap> {
     /**
-     * Builds the labeled paragraph component.
-     * @param labelText The text for the label.
-     * @param text The text content for the contained `P` component.
+     * Create LabeledParagraph component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param paragraphPhrase The phrasing content for the p element.
      * @param lblPosition The position of the label.
      * @param lblAlignment The alignment of the label.
      */
-    constructor(labelText: string, text?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
-        super("div", lblPosition ?? LabelPosition.LEFT, lblAlignment);
-        this.append(
-            this.label = new Span(labelText),
-            this.paragraph = new P(text)
-        );
+    constructor(labelPhrase: Phrase | Phrase[], paragraphPhrase: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
+        super(labelPhrase, lblPosition ?? LabelPosition.START, lblAlignment);
+        this.initialize();
+        Array.isArray(paragraphPhrase)
+            ? this.component.phrase(...paragraphPhrase)
+            : this.component.phrase(paragraphPhrase);
     }
 
     /**
-     * Get the paragraph component of this component.
+     * Get P component of this component. Equivalent to `Component`, just with a more descriptive
+     * name.
      */
     public get Paragraph(): P {
-        return this.paragraph;
+        return this.component;
+    }
+
+    /**
+     * Set the phrasing content of the components paragraph. __The setter `LabelPhrase` here is an
+     * alias for the property `this.Paragraph.Phrase`.__
+     */
+    public set Phrase(phrase: Phrase | Phrase[]) {
+        this.component.Phrase = phrase;
+    }
+
+    /**
+     * Set the phrasing content of the the components paragraph. __The function `labelPhrase()` here
+     * is an alias for the function `this.Label.phrase()` but it returns _this_ instance instead of
+     * the 'Paragraph' instance.__
+     * @param phrase The phrasing content to be set for the paragraph.
+     * @returns This instance.
+     */
+    public phrase(...phrase: Phrase[]): this {
+        this.component.phrase(...phrase);
+        return this;
+    }
+
+    /** @inheritdoc */
+    protected override buildUI(): this {
+        (this.lblPosition === LabelPosition.START) || (this.lblPosition === LabelPosition.TOP)
+            ? this.ui = new Div()
+                .append(
+                    this.label = new Span(),
+                    this.component = new P()
+                )
+            : this.ui = new Div()
+                .append(
+                    this.component = new P(),
+                    this.label = new Span()
+                );
+        return this;
     }
 }
 
@@ -46,14 +83,14 @@ export class LabeledParagraph extends LabeledComponent<Span> {
 export class LabeledParagraphFactory<T> extends ComponentFactory<LabeledParagraph> {
     /**
      * Create, set up and return LabeledParagraph component.
-     * @param labelText The text for the label.
-     * @param text The text content for the contained `P` component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param paragraphPhrase The phrasing content for the p element.
      * @param lblPosition The position of the label.
      * @param lblAlignment The alignment of the label.
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns LabeledParagraph component.
      */
-    public labeledParagraph(labelText: string, text?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledParagraph {
-        return this.setupComponent(new LabeledParagraph(labelText, text, lblPosition, lblAlignment), data);
+    public labeledParagraph(labelPhrase: Phrase | Phrase[], paragraphPhrase: Phrase | Phrase[], lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledParagraph {
+        return this.setupComponent(new LabeledParagraph(labelPhrase, paragraphPhrase, lblPosition, lblAlignment), data);
     }
 }

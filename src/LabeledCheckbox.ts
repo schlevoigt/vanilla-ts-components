@@ -1,4 +1,4 @@
-import { CheckedEvent, ComponentFactory } from "@vanilla-ts/core";
+import { CheckedEvent, ComponentFactory, Phrase } from "@vanilla-ts/core";
 import { Checkbox } from "@vanilla-ts/dom";
 import { LabelAlignment, LabelPosition } from "./LabeledComponent.js";
 import { LabeledInputComponent } from "./LabeledInputComponent.js";
@@ -15,50 +15,52 @@ export interface LabeledCheckboxEventMap extends HTMLElementEventMap {
 /**
  * Labeled checkbox component.
  */
-export class LabeledCheckbox extends LabeledInputComponent<Checkbox, LabeledCheckboxEventMap> {
+export class LabeledCheckbox<EventMap extends LabeledCheckboxEventMap = LabeledCheckboxEventMap> extends LabeledInputComponent<Checkbox, EventMap> {
     /**
-     * Builds the labeled checkbox component.
-     * @param labelText The text for the label.
-     * @param id The `id` attribute of the checkbox.
-     * @param value The value of the checkbox.
-     * @param name The `name` attribute of the checkbox.
+     * Create LabeledCheckbox component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param id The `id` attribute of the checkbox input element.
+     * @param value The value of the checkbox input element.
+     * @param name The `name` attribute of the checkbox input element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label toggles
-     *   the checkbox, if `labelAction` is `false`, clicking on the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
+     *   the checkbox input element, if `labelAction` is `false`, clicking on the label does
+     *   nothing.
      */
-    constructor(labelText: string, id?: string, value?: string, name?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
-        super(labelText, id, labelAction, lblPosition, lblAlignment);
-        this.append(
-            this.input = new Checkbox(id, value, name),
-            this.label
-        );
-        // Forward this event to make handling of the component easier.
-        this.input.on("checked", (ev) => {
-            // ev.preventDefault();  
-            ev.stopImmediatePropagation();
-            this._dom.dispatchEvent(new CheckedEvent("checked", this, { Checked: ev.detail.Checked })); // eslint-disable-line jsdoc/require-jsdoc
-        });
+    constructor(labelPhrase: Phrase | Phrase[], id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean) {
+        super(labelPhrase, id, lblPosition ?? LabelPosition.END, lblAlignment, labelAction);
+        this.component = new Checkbox(id, value, name)
+            // Forward this event to make handling of the component easier.
+            .on("checked", (ev) => {
+                // ev.preventDefault();  
+                ev.stopImmediatePropagation();
+                this.emit(new CheckedEvent("checked", this, { Checked: ev.detail.Checked })); // eslint-disable-line jsdoc/require-jsdoc
+            });
+        (this.lblPosition === LabelPosition.START) || (this.lblPosition === LabelPosition.TOP)
+            ? this.ui.append(this.component)
+            : this.ui.insert(0, this.component);
     }
 
     /**
-     * Alternative property to 'Input' for accessing the contained checkbox with a descriptive name.
+     * Get Checkbox component of this component. Equivalent to `Component`, just with a more
+     * descriptive name.
      */
     public get Checkbox(): Checkbox {
-        return this.input;
+        return this.component;
     }
 
     /**
      * Get/set the checked state of the checkbox (re-exported for easier direct access).
      */
     public get Checked(): boolean {
-        return this.input.Checked;
+        return this.component.Checked;
     }
     /** @inheritdoc */
     public set Checked(v: boolean) {
-        this.input.Checked = v;
+        this.component.Checked = v;
     }
 
     /**
@@ -68,7 +70,7 @@ export class LabeledCheckbox extends LabeledInputComponent<Checkbox, LabeledChec
      * @returns This instance.
      */
     public checked(checked: boolean): this {
-        this.input.Checked = checked;
+        this.component.Checked = checked;
         return this;
     }
 
@@ -76,11 +78,11 @@ export class LabeledCheckbox extends LabeledInputComponent<Checkbox, LabeledChec
      * Get/set the indeterminate state of the checkbox (re-exported for easier direct access).
      */
     public get Indeterminate(): boolean {
-        return this.input.Indeterminate;
+        return this.component.Indeterminate;
     }
     /** @inheritdoc */
     public set Indeterminate(v: boolean) {
-        this.input.Indeterminate = v;
+        this.component.Indeterminate = v;
     }
 
     /**
@@ -91,7 +93,7 @@ export class LabeledCheckbox extends LabeledInputComponent<Checkbox, LabeledChec
      * @returns This instance.
      */
     public indeterminate(indeterminate: boolean): this {
-        this.input.indeterminate(indeterminate);
+        this.component.indeterminate(indeterminate);
         return this;
     }
 }
@@ -102,20 +104,21 @@ export class LabeledCheckbox extends LabeledInputComponent<Checkbox, LabeledChec
 export class LabeledCheckboxFactory<T> extends ComponentFactory<LabeledCheckbox> {
     /**
      * Create, set up and return LabeledCheckbox component.
-     * @param labelText The text for the label.
-     * @param id The `id` attribute of the checkbox.
-     * @param value The value of the checkbox.
-     * @param name The `name` attribute of the checkbox.
+     * @param labelPhrase The phrasing content for the label.
+     * @param id The `id` attribute of the checkbox input element.
+     * @param value The value of the checkbox input element.
+     * @param name The `name` attribute of the checkbox input element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label toggles
-     *   the checkbox, if `labelAction` is `false`, clicking on the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
+     *   the checkbox input element, if `labelAction` is `false`, clicking on the label does
+     *   nothing.
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns LabeledCheckbox component.
      */
-    public labeledCheckbox(labelText: string, id?: string, value?: string, name?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledCheckbox {
-        return this.setupComponent(new LabeledCheckbox(labelText, id, value, name, labelAction, lblPosition, lblAlignment), data);
+    public labeledCheckbox(labelPhrase: Phrase | Phrase[], id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean, data?: T): LabeledCheckbox {
+        return this.setupComponent(new LabeledCheckbox(labelPhrase, id, value, name, lblPosition, lblAlignment, labelAction), data);
     }
 }

@@ -1,46 +1,58 @@
-import { ComponentFactory } from "@vanilla-ts/core";
-import { ISelectValues, Label, Select } from "@vanilla-ts/dom";
+import { ComponentFactory, Phrase } from "@vanilla-ts/core";
+import { Div, ISelectValues, Label, Select } from "@vanilla-ts/dom";
 import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledComponent.js";
 
 
 /**
- * Labeled TextArea component.
+ * Labeled select component.
  */
-export class LabeledSelect extends LabeledComponent<Label> {
-    protected _select: Select;
-
+export class LabeledSelect<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends LabeledComponent<Label, Select, EventMap> {
     /**
-     * Builds the labeled select component.
-     * @param labelText The text for the label.
-     * @param values The values to be displayed in the select component.
-     * @param id The id (attribute) of the select component.
-     * @param value The value of the select component.
-     * @param name The name (attribute) of the select component.
+     * Create LabeledSelect component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param values The values to be displayed in the select element.
+     * @param id The `id` attribute of the select element.
+     * @param value The value of the select element.
+     * @param name The `name` attribute of the select element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label focuses
-     *   the select component, if `labelAction` is `false`, clicking on the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
+     *   the select element, if `labelAction` is `false`, clicking on the label does nothing.
      */
-    constructor(labelText: string, values: ISelectValues[], id?: string, value?: string, name?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment) {
-        super("div", lblPosition, lblAlignment);
-        this.append(
-            this.label = new Label(
-                labelText,
-                id && (labelAction === undefined || labelAction === true)
-                    ? id
-                    : undefined
-            ),
-            this._select = new Select(values, id, value, name)
-        );
+    constructor(labelPhrase: Phrase | Phrase[], values: ISelectValues[], id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean) {
+        super(labelPhrase, lblPosition ?? LabelPosition.TOP, lblAlignment);
+        this.initialize(undefined, values, id, value, name, labelAction);
     }
 
     /**
      * Get select component of this component.
      */
     public get Select(): Select {
-        return this._select;
+        return this.component;
+    }
+
+    /** @inheritdoc */
+    protected override buildUI(values: ISelectValues[], id?: string, value?: string, name?: string, labelAction?: boolean): this {
+        this.label = new Label(
+            id && (labelAction === undefined || labelAction === true)
+                ? id
+                : undefined
+        );
+        this.component = new Select(values, id, value, name);
+        (this.lblPosition === LabelPosition.START) || (this.lblPosition === LabelPosition.TOP)
+            ? this.ui = new Div()
+                .append(
+                    this.label,
+                    this.component
+                )
+            : this.ui = new Div()
+                .append(
+                    this.component,
+                    this.label
+                );
+        return this;
     }
 }
 
@@ -50,21 +62,21 @@ export class LabeledSelect extends LabeledComponent<Label> {
 export class LabeledSelectFactory<T> extends ComponentFactory<LabeledSelect> {
     /**
      * Create, set up and return LabeledSelect component.
-     * @param labelText The text for the label.
-     * @param values The values to be displayed in the select component.
-     * @param id The id (attribute) of the select component.
-     * @param value The value of the select component.
-     * @param name The name (attribute) of the select component.
+     * @param labelPhrase The phrasing content for the label.
+     * @param values The values to be displayed in the select element.
+     * @param id The `id` attribute of the select element.
+     * @param value The value of the select element.
+     * @param name The `name` attribute of the select element.
+     * @param lblPosition The position of the label.
+     * @param lblAlignment The alignment of the label.
      * @param labelAction Controls the following behavior:
      * - If `id` isn't defined, clicking on the label does nothing.
      * - If `id` is defined: if `labelAction` is `true` or `undefined`, a click on the label focuses
-     *   the select component, if `labelAction` is `false`, clicking on the label does nothing.
-     * @param lblPosition The position of the label.
-     * @param lblAlignment The alignment of the label.
+     *   the select element, if `labelAction` is `false`, clicking on the label does nothing.
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns LabeledSelect component.
      */
-    public labeledSelect(labelText: string, values: ISelectValues[], id?: string, value?: string, name?: string, labelAction?: boolean, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, data?: T): LabeledSelect {
-        return this.setupComponent(new LabeledSelect(labelText, values, id, value, name, labelAction, lblPosition, lblAlignment), data);
+    public labeledSelect(labelPhrase: Phrase | Phrase[], values: ISelectValues[], id?: string, value?: string, name?: string, lblPosition?: LabelPosition, lblAlignment?: LabelAlignment, labelAction?: boolean, data?: T): LabeledSelect {
+        return this.setupComponent(new LabeledSelect(labelPhrase, values, id, value, name, lblPosition, lblAlignment, labelAction), data);
     }
 }
