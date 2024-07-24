@@ -1,3 +1,4 @@
+.labeled-radio-button,
 .vts-labeled-radio-button {
     display: flex;
     position: relative;
@@ -25,7 +26,7 @@
         margin-inline-start: 0.5rem;
     }
     /* #endregion */
-    /* #region top/bottom 
+    /* #region top/bottom
        These styles only exist for the sake of technical completeness; in practice, this arrangement
        is not actually visually usable. */
     &.p-top,

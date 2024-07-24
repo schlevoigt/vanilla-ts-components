@@ -9,24 +9,30 @@
     --stepper-button-offset: 0.15rem;
     --stepper-gap: 0rem;
 }
+.stepper,
 .vts-stepper {
     display: flex;
     align-items: center;
     justify-content: center;
-    > button {
+    > .stepper-button {
         width: 1.5rem;
         height: 1.5rem;
         background-color: transparent;
         border: none;
+        background-repeat: no-repeat;
         filter: brightness(1) grayscale(1);
+        opacity: 0.7;
         &[disabled] {
             opacity: 0.45;
         }
         &:active:not([disabled]) {
             transform: scale(0.9);
         }
+        &:hover:not([disabled]) {
+            opacity: 1;
+            transition: 100ms ease-in;
+        }
     }
-    /* Variant with background-image. */
     > .first {
         background-image: var(--stepper-first);
     }
@@ -45,40 +51,14 @@
     > .last {
         background-image: var(--stepper-last);
     }
-    /* Variant with FontAwesome. */
-    /*
-    > .button::before {
-        display: inline-block;
-    }
-    > .first::before {
-        content: "\f048";
-    }
-    > .page-backward::before {
-        content: "\f04a";
-    }
-    > .backward::before {
-        content: "\f0d9";
-        transform: scale(1.265);
-    }
-    > .forward::before {
-        content: "\f0da";
-        transform: scale(1.265);
-    }
-    > .page-forward::before {
-        content: "\f04e";
-    }
-    > .last::before {
-        content: "\f051";
-    }
-    */
     /* Horizontal appearance. */
     &.horizontal,
     &.horizontal-alt {
         flex-direction: row;
-        > button {
+        > .stepper-button {
             margin-inline-end: var(--stepper-button-offset);
         }
-        > button:last-child {
+        > .stepper-button:last-child {
             margin-inline-end: unset;
         }
         > .first + .forward,
@@ -94,24 +74,38 @@
         }
     }
     &.horizontal {
-        > button:dir(rtl) {
+        > .stepper-button {
+            &:active:not([disabled]) {
+                transform: scale(0.9);
+            }
+        }
+        > .stepper-button:dir(rtl) {
             transform: rotate(180deg);
+            &:active:not([disabled]) {
+                transform: rotate(180deg) scale(0.9);
+            }
         }
     }
     &.horizontal-alt {
-        > button {
-            transform: rotate(-90deg);
+        > .stepper-button {
+            transform: rotate(90deg);
+            &:active:not([disabled]) {
+                transform: rotate(90deg) scale(0.9);
+            }
         }
     }
     /* Vertical appearance. */
     &.vertical,
     &.vertical-alt {
         flex-direction: column;
-        > button {
+        > .stepper-button {
             margin-block-end: var(--stepper-button-offset);
             transform: rotate(90deg);
+            &:active:not([disabled]) {
+                transform: rotate(90deg) scale(0.9);
+            }
         }
-        > button:last-child {
+        > .stepper-button:last-child {
             margin-block-end: unset;
         }
         > .first + .forward,
@@ -127,11 +121,17 @@
         }
     }
     &.vertical-alt {
-        > button {
-            transform: unset;
+        > .stepper-button {
+            transform: rotate(0deg);
+            &:active:not([disabled]) {
+                transform: rotate(0deg) scale(0.9);
+            }
         }
-        > button:dir(rtl) {
+        > .stepper-button:dir(rtl) {
             transform: rotate(180deg);
+            &:active:not([disabled]) {
+                transform: rotate(180deg) scale(0.9);
+            }
         }
     }
 }

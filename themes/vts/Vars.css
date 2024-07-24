@@ -9,7 +9,7 @@
 
     /* #region Sizes
        console.log(parseFloat(getComputedStyle(document.documentElement).fontSize));
-       0.075rem ~ 1 Pixel at a font-size of 10pt.
+       __Note:__ 0.075rem ~ 1 Pixel at a font-size of 10pt.
        3.52777...mm ~10pt. */
     --base-size: 1rem;
     --base-size-half: 0.5rem;
@@ -38,6 +38,10 @@
     --23px: calc(23 * var(--1px));
     --24px: calc(24 * var(--1px));
     --25px: calc(25 * var(--1px));
+    --input-border-radius: var(--2px);
+    --border-radius-normal: var(--6px);
+    --border-radius-small: var(--3px);
+    --border-radius-large: var(--13px)
     /* #endregion */
 
     /* #region Colors */
@@ -54,11 +58,7 @@
     --input-background-color: hsl(0 0% 100%);
     --input-border-color: hsl(0 0% 85.9%);
     --input-border-color-dark: hsl(0 0% 71%);
-    --input-border-radius: var(--2px);
     --input-focused-outline-color: hsl(219 93.2% 76.9%);
-    --border-radius-normal: var(--6px);
-    --border-radius-small: var(--3px);
-    --border-radius-large: 1rem;
     --menu-background-color: hsl(0 0% 94.5%);
     --menu-background-color-focused: hsl(214 100% 67.5%);
     --menu-border-color: hsl(0 0% 78.4%);

@@ -48,7 +48,7 @@ export class TabEvent extends ACustomComponentEvent<"tab", TabGroup, {
     Active: boolean;
 }> {
     /**
-     * Create Tab event.
+     * Create `tab` event.
      * @param sender The event emitter (always `TabGroup`).
      * @param tab The tab which is activated/deactivated.
      * @param active `true`, if the tab is was activated, otherwise `false`.
@@ -80,7 +80,7 @@ export class TabCloseEvent extends ACustomComponentEvent<"tab-close", TabGroup, 
 }
 
 /**
- * Additional event(s) for `Tab`.
+ * Additional event(s) for `TabGroup`.
  */
 export interface TabGroupEventMap extends HTMLElementEventMap {
     /** A `tab` event occured (on activation/deactivation). */
@@ -320,12 +320,13 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
      * connected or mounted elsewhere (header or content), is ignored.
      * @returns This instance.
      */
-    public append(...tabs: Tab[]): this {
-        if (tabs.length === 0) {
+    public append(...tabs: (Tab | undefined | null)[]): this {
+        const uniques = new Set(tabs.filter(e => e ?? e)) as Set<Tab>;
+        if (uniques.size === 0) {
             return this;
         }
         const newTabs: Tab[] = [];
-        for (const tab of [...new Set(tabs)]) {
+        for (const tab of uniques) {
             if (tab.Parent
                 || tab.Connected
                 || tab.Content.Parent
@@ -362,19 +363,20 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
      * this tab group).
      * @returns This instance.
      */
-    public insert(at: number | Tab, ...tabs: Tab[]): this {
-        if (tabs.length === 0) {
+    public insert(at: number | Tab, ...tabs: (Tab | undefined | null)[]): this {
+        const uniques = new Set(tabs.filter(e => e ?? e)) as Set<Tab>;
+        if (uniques.size === 0) {
             return this;
         }
-        const tabs_: Tab[] = [];
+        const _tabs: Tab[] = [];
         /**
          * - Allow tabs from inside this tab group.
          * - Exclude tabs, that are already part of another tab group. `[...new Set(tabs)]` avoids
          *   multiple unnecessary `remove`/`onBeforeMount`/`onDidMount` operations.
          */
-        for (const tab of [...new Set(tabs)]) {
+        for (const tab of uniques) {
             if (this.tabs.includes(tab)) {
-                tabs_.push(tab);
+                _tabs.push(tab);
             } else if (tab.Parent
                 || tab.Connected
                 || tab.Content.Parent
@@ -382,10 +384,10 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
             ) {
                 continue;
             } else {
-                tabs_.push(tab);
+                _tabs.push(tab);
             }
         }
-        this.tabHeadersContainer.insert(at, ...tabs_);
+        this.tabHeadersContainer.insert(at, ..._tabs);
         this.syncTabs();
         return this;
     }
@@ -396,14 +398,11 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
      * (but not disposed of). Any element of `tabs`, that isn't a tab of this tab group, is ignored.
      * @returns This instance.
      */
-    public remove(...tabs: Tab[]): this {
+    public remove(...tabs: (Tab | undefined | null)[]): this {
         if (tabs.length === 0) {
             return this;
         }
-        const tabsToRemove = [...new Set(tabs)].filter(e => this.tabs.includes(e));
-        if (tabsToRemove.length === 0) {
-            return this;
-        }
+        const tabsToRemove = [...new Set(tabs.filter(e => (e ?? e) && this.tabs.includes(e))) as Set<Tab>];
         // Get new tab to activate after removal (if `remove()` includes the active tab).
         const newActiveTab = this.getTabToActivateAfterRemoval(tabsToRemove);
         for (const tab of tabsToRemove) {
@@ -417,14 +416,14 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
 
     /**
      * Extracts tabs from this tab group. The extracted tabs will be pushed to the array given by
-     * `to`. If the length of `tabs` is `0` _all_ tabs of this tab group will be extracted and
-     * pushed to `to`.
+     * `to`.
      * @param to An array to which the extracted tabs will be pushed.
-     * @param tabs The tabs to be extracted. Any element of `tabs`, that isn't a tab of this tab
-     * group, is ignored.
+     * @param tabs The tabs to be extracted. If the length of `tabs` is `0`, _all_ tabs of this tab
+     * group will be extracted and pushed to `to`. Any element of `tabs`, that isn't a tab of this
+     * tab group, is ignored.
      * @returns This instance.
      */
-    public extract(to: Tab[], ...tabs: Tab[]): this {
+    public extract(to: Tab[], ...tabs: (Tab | undefined | null)[]): this {
         if (tabs.length === 0) {
             for (const tab of this.tabs) {
                 tab.Content.Parent?.remove(tab.Content);
@@ -433,10 +432,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
             this.syncTabs();
             return this;
         }
-        const tabsToExtract = [...new Set(tabs)].filter(e => this.tabs.includes(e));
-        if (tabsToExtract.length === 0) {
-            return this;
-        }
+        const tabsToExtract = [...new Set(tabs.filter(e => (e ?? e) && this.tabs.includes(e))) as Set<Tab>];
         // Get new tab to activate after extraction (if `extract()` includes the active tab).
         const newActiveTab = this.getTabToActivateAfterRemoval(tabsToExtract);
         for (const tab of tabsToExtract) {
@@ -449,15 +445,15 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
     }
 
     /**
-     * Extracts and appends tabs from this the instance to another `TabGroup` instance. If the
-     * length of `tabs` is `0` _all_ tabs of this tab group will be extracted and appended to
-     * `target`. If `target` is this instance, an exception will be thrown.
-     * @param target The target instance to which the tabs are to be appended.
-     * @param tabs The tabs to be extracted and appended. Any element of `tabs`, that isn't a tab of
-     * this tab group, is ignored.
+     * Extracts and appends tabs from this the instance to another `TabGroup` instance.
+     * @param target The target instance to which the tabs are to be appended. If `target` is this
+     * instance, an exception will be thrown.
+     * @param tabs The tabs to be extracted and appended. If the length of `tabs` is `0`, _all_ tabs
+     * of this tab group will be extracted and appended to `target`. Any element of `tabs`, that
+     * isn't a tab of this tab group, is ignored.
      * @returns This instance.
      */
-    public moveTo(target: TabGroup, ...tabs: Tab[]): this {
+    public moveTo(target: TabGroup, ...tabs: (Tab | undefined | null)[]): this {
         if (target === this) {
             throw new Error("TabGroup: 'moveTo' isn't supported inside TabGroup.");
         }
@@ -469,19 +465,19 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
     }
 
     /**
-     * Extracts and inserts tabs from this the instance into another `TabGroup` instance. If the
-     * length of `tabs` is `0` _all_ tabs of this tab group will be extracted and inserted into
-     * `target`. If `target` is this instance, an exception will be thrown.
-     * @param target The target instance into which the tabs are to be inserted.
+     * Extracts and inserts tabs from this the instance into another `TabGroup` instance.
+     * @param target The target instance into which the tabs are to be inserted. If `target` is this
+     * instance, an exception will be thrown.
      * @param at The target index in the tabs collection of `target`. If `at` is lower than `0` it
      * is considered to be `0`. If `at` is greater or equal to `target.Tabs.length` the given tabs
      * will be appended. If `at` is a tab in `target` the tabs will be inserted at the position of
      * `at` in `target.Tabs`. If `at` is not a tab of `target` an exception will be thrown.
-     * @param tabs The tabs to be moved. Any element of `tabs`, that isn't a tab of this tab group,
-     * is ignored.
+     * @param tabs The tabs to be moved. If the length of `tabs` is `0`, _all_ tabs of this tab
+     * group will be extracted and inserted into `target`. Any element of `tabs`, that isn't a tab
+     * of this tab group, is ignored.
      * @returns This instance.
      */
-    public moveToAt(target: TabGroup, at: number | Tab, ...tabs: Tab[]): this {
+    public moveToAt(target: TabGroup, at: number | Tab, ...tabs: (Tab | undefined | null)[]): this {
         if (target === this) {
             throw new Error("TabGroup: 'moveToAt' isn't supported inside TabGroup.");
         }

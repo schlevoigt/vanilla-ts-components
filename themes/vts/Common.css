@@ -2,7 +2,6 @@ html {
     font-family: var(--system-ui);
     font-size: 10pt;
     color: var(--font-color);
-    /* color: black; */
     /* -webkit-font-smoothing: antialiased; */
 }
 * {
@@ -39,6 +38,7 @@ input[type="week"],
 input[type="month"],
 input[type="checkbox"],
 input[type="radio"],
+input[type="range"],
 input[type="text"],
 select,
 textarea {

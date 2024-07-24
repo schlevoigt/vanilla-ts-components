@@ -107,7 +107,7 @@ export interface DialogEventMap extends HTMLElementEventMap {
  */
 export class Dialog<EventMap extends DialogEventMap = DialogEventMap> extends AElementComponentWithInternalUI<DOMDialog, EventMap> { // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
     protected dlg: DOMDialog;
-    protected options_: DialogOptions = {};
+    protected _options: DialogOptions = {};
     protected fncOnKeyDown = this.onKeyDown.bind(this);
     protected modalResolver: (value?: unknown) => void;
     protected state: DialogState = DialogState.Closed;
@@ -133,16 +133,16 @@ export class Dialog<EventMap extends DialogEventMap = DialogEventMap> extends AE
         super();
         super
             .initialize()
-            .options(options || {})
+            .options(options ?? {})
             .append(...components)
             .on("keydown", this.fncOnKeyDown);
     }
 
     /**
-     * Get/set the options for this dialog.
+     * Get/set the options for this dialog. The getter returns a _copy_ of the options.
      */
     public get Options(): DialogOptions {
-        return structuredClone(this.options_);
+        return structuredClone(this._options);
     }
     /** @inheritdoc */
     public set Options(v: DialogOptions) {
@@ -155,19 +155,19 @@ export class Dialog<EventMap extends DialogEventMap = DialogEventMap> extends AE
      * @returns This instance.
      */
     public options(options: DialogOptions): this {
-        this.options_ = {
+        this._options = {
             /* eslint-disable jsdoc/require-jsdoc */
-            Position: options.Position ? DOMPoint.fromPoint(options.Position) : this.options_.Position ? DOMPoint.fromPoint(this.options_.Position) : new DOMPoint(0, 0),
-            HCentered: options.HCentered ?? this.options_.HCentered ?? true,
-            VCentered: options.VCentered ?? this.options_.VCentered ?? true,
-            LockFocusCycleInside: options.LockFocusCycleInside ?? this.options_.LockFocusCycleInside ?? true,
-            CloseWithEscape: options.CloseWithEscape ?? this.options_.CloseWithEscape ?? true
+            Position: options.Position ? DOMPoint.fromPoint(options.Position) : this._options.Position ? DOMPoint.fromPoint(this._options.Position) : new DOMPoint(0, 0),
+            HCentered: options.HCentered ?? this._options.HCentered ?? true,
+            VCentered: options.VCentered ?? this._options.VCentered ?? true,
+            CloseWithEscape: options.CloseWithEscape ?? this._options.CloseWithEscape ?? true,
+            LockFocusCycleInside: options.LockFocusCycleInside ?? this._options.LockFocusCycleInside ?? true,
             /* eslint-enable */
         };
-        this.style("marginLeft", `${this.options_.Position!.x}px`);
-        this.style("marginTop", `${this.options_.Position!.y}px`);
-        this.options_.HCentered ? this.addClass("h-centered") : this.removeClass("h-centered");
-        this.options_.VCentered ? this.addClass("v-centered") : this.removeClass("v-centered");
+        this.style("marginLeft", `${this._options.Position!.x}px`);
+        this.style("marginTop", `${this._options.Position!.y}px`);
+        this._options.HCentered ? this.addClass("h-centered") : this.removeClass("h-centered");
+        this._options.VCentered ? this.addClass("v-centered") : this.removeClass("v-centered");
         return this;
     }
 
@@ -260,12 +260,12 @@ export class Dialog<EventMap extends DialogEventMap = DialogEventMap> extends AE
             case "Escape":
                 event.preventDefault();
                 event.stopImmediatePropagation();
-                if (this.options_.CloseWithEscape) {
+                if (this._options.CloseWithEscape) {
                     this.close();
                 }
                 break;
             case "Tab":
-                if (this.options_.LockFocusCycleInside && !event.ctrlKey && !event.altKey && !event.metaKey) {
+                if (this._options.LockFocusCycleInside && !event.ctrlKey && !event.altKey && !event.metaKey) {
                     const focusableElements = this.dlg.DOM.querySelectorAll(this.focusableElementsSelector);
                     const firstFocusableElement = <HTMLElement>focusableElements[0];
                     const lastFocusableElement = <HTMLElement>focusableElements[focusableElements.length - 1];
@@ -336,7 +336,7 @@ export class DialogFactory<T> extends ComponentFactory<Dialog> {
      * @param data Optional arbitrary data passed to the `setupComponent()` function of the factory.
      * @returns Dialog component.
      */
-    public dialog(options: DialogOptions | undefined = undefined, components: INodeComponent<Node>[], data?: T): Dialog {
+    public dialog(options: DialogOptions | undefined = undefined, components: INodeComponent<Node>[] = [], data?: T): Dialog {
         return this.setupComponent(new Dialog(options, ...components), data);
     }
 }

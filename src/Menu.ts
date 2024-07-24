@@ -10,8 +10,8 @@ export type MenuEntry = MenuItem | MenuHeading | MenuSeparator;
  */
 export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap> extends AElementComponentWithInternalUI<LiUl, EventMap> {
     protected checked_: boolean = false;
-    protected hint_: Span;
-    protected content_: Span;
+    protected _hint: Span;
+    protected _content: Span;
 
     /**
      * Create menu item component.
@@ -42,7 +42,7 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      * @see Function `content()`.
      */
     public get Content(): INodeComponent<Node>[] {
-        return this.content_.Children;
+        return this._content.Children;
     }
     /** @inheritdoc */
     public set Content(content: Phrase | Phrase[] | IElementComponent<HTMLElement>) {
@@ -66,20 +66,20 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      */
     public content(content: Phrase | Phrase[] | IElementComponent<HTMLElement>): this {
         this.removeClass("text", "phrase", "component");
-        this.content_.clear();
+        this._content.clear();
         if (typeof content === "string") {
-            this.content_.phrase(new Text(content));
+            this._content.phrase(new Text(content));
             this.addClass("text");
         } else if (content instanceof Text) {
-            this.content_.append(content);
+            this._content.append(content);
             this.addClass("text");
         } else if (Array.isArray(content)) {
             if (content.length === 1 && typeof content[0] === "string") {
-                this.content_.phrase(new Text(content[0]));
+                this._content.phrase(new Text(content[0]));
                 this.addClass("text");
             } else {
                 const elements = content.map(e => typeof e === "string" ? new Text(e) : e);
-                this.content_.phrase(...elements);
+                this._content.phrase(...elements);
                 this.addClass(
                     elements.every(e => e instanceof Text)
                         ? "text"
@@ -87,7 +87,7 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
                 );
             }
         } else if (content instanceof AElementComponent) {
-            this.content_.append(content);
+            this._content.append(content);
             this.addClass("component");
         }
         return this;
@@ -106,7 +106,7 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      * @see Function `content()`.
      */
     public get Hint(): INodeComponent<Node>[] {
-        return this.hint_.Children;
+        return this._hint.Children;
     }
     /** @inheritdoc */
     public set Hint(hint: Phrase | Phrase[] | IElementComponent<HTMLElement> | undefined) {
@@ -130,22 +130,22 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
      * @returns This instance.
      */
     public hint(hint?: Phrase | Phrase[] | IElementComponent<HTMLElement>): this {
-        this.hint_.clear();
+        this._hint.clear();
         if (hint === undefined) {
             return this;
         }
         if (typeof hint === "string") {
-            this.hint_.phrase(new Text(hint));
+            this._hint.phrase(new Text(hint));
         } else if (hint instanceof Text) {
-            this.hint_.append(hint);
+            this._hint.append(hint);
         } else if (Array.isArray(hint)) {
             if (hint.length === 1 && typeof hint[0] === "string") {
-                this.hint_.phrase(new Text(hint[0]));
+                this._hint.phrase(new Text(hint[0]));
             } else {
-                this.hint_.phrase(...hint.map(e => typeof e === "string" ? new Text(e) : e));
+                this._hint.phrase(...hint.map(e => typeof e === "string" ? new Text(e) : e));
             }
         } else if (hint instanceof AElementComponent) {
-            this.hint_.append(hint);
+            this._hint.append(hint);
         }
         return this;
     }
@@ -182,8 +182,8 @@ export class MenuItem<EventMap extends HTMLElementEventMap = HTMLElementEventMap
         this.ui = new LiUl()
             .addClass("menu-item")
             .append(
-                this.content_ = new Span(),
-                this.hint_ = new Span().addClass("hint")
+                this._content = new Span(),
+                this._hint = new Span().addClass("hint")
             );
         return this;
     }

@@ -2,8 +2,9 @@
   "name": "@vanilla-ts/components",
   "description": "TypeScript Web UI Library -- Components",
   "companyname": "mn4367",
-  "copyright": "©2024 mn4367",
+  "copyright": "©2025 mn4367",
   "version": "0.0.1",
+  "type": "module",
   "identifier": "mn4367.vanilla-ts.components",
   "keywords": [
     "typescript",
@@ -35,25 +36,23 @@
     "@vanilla-ts/dom": "file:../vanilla-ts-dom"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "28.0.1",
-    "@rollup/plugin-json": "6.1.0",
-    "@rollup/plugin-node-resolve": "15.3.0",
+    "@rollup/plugin-node-resolve": "16.0.1",
     "@rollup/plugin-terser": "0.4.4",
     "@typescript-eslint/eslint-plugin": "7.17.0",
     "@typescript-eslint/parser": "7.17.0",
     "eslint": "8.57.0",
     "eslint-plugin-jsdoc": "48.8.3",
     "npm-run-all": "4.1.5",
-    "rollup": "4.28.0",
-    "shx": "0.3.4",
-    "terser": "5.37.0",
+    "rollup": "4.36.0",
+    "shx": "0.4.0",
+    "terser": "5.39.0",
     "tsc-watch": "6.2.1",
-    "typescript": "5.7.2"
+    "typescript": "5.8.2"
   },
   "scripts": {
     "Watch": "npm-run-all -p watch:*",
     "Clean": "shx rm -rf ./types ./lib ./example/out ./example/index.js*",
-    "watch:src": "tsc-watch -p ./src/tsconfig.src.json",
+    "watch:src": "tsc -w -p ./src/tsconfig.src.json",
     "watch:example": "tsc-watch -p ./example/tsconfig.example.json --onSuccess \"npm run pack:example\"",
     "compile:src": "tsc -p ./src/tsconfig.src.json",
     "compile:example": "tsc -p ./example/tsconfig.example.json",
