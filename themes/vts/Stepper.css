@@ -22,7 +22,7 @@
         &[disabled] {
             opacity: 0.45;
         }
-        &:active {
+        &:active:not([disabled]) {
             transform: scale(0.9);
         }
     }
@@ -46,7 +46,7 @@
         background-image: var(--stepper-last);
     }
     /* Variant with FontAwesome. */
-    /* 
+    /*
     > .button::before {
         display: inline-block;
     }

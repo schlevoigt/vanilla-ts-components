@@ -149,6 +149,18 @@ export abstract class LabeledComponent<L extends (Label | Span), C extends IElem
         this.labelAlignment(v);
     }
 
+    /** @inheritdoc */
+    public override focus(options?: FocusOptions): this {
+        this.component.DOM.focus(options);
+        return this;
+    }
+
+    /** @inheritdoc */
+    public override blur(): this {
+        this.component.DOM.blur();
+        return this;
+    }
+
     /**
      * Set the alignment of the label.
      * @param v The alignment of the label.

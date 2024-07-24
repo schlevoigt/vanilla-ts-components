@@ -393,7 +393,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
     /**
      * Removes tabs from this tab group.
      * @param tabs The tabs to be removed. If the length of `tabs` is `0`, _all_ tabs are removed
-     * (but not disposed of). Any element of `tabs`, that isn't a tab of this tab group, is ignored. 
+     * (but not disposed of). Any element of `tabs`, that isn't a tab of this tab group, is ignored.
      * @returns This instance.
      */
     public remove(...tabs: Tab[]): this {
@@ -509,7 +509,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
     /**
      * Returns the tab to be activated after removing some tabs.
      * @param tabsToRemove The tabs to be removed. Any element of `tabsToRemove`, that isn't a tab
-     * of this tab group, is ignored. 
+     * of this tab group, is ignored.
      * @returns The tab that is to be activated after removing some tabs. If `undefined` is
      * returned, the active current tab is not included in the tabs to be removed or there is no tab
      * left that can be activated.

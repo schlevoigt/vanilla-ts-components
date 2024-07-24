@@ -158,7 +158,7 @@ export class LabeledRadioButtonGroup<EventMap extends LabeledRadioButtonGroupEve
                 this.emit(new Event("change", ev));
             });
             lrb.RadioButton.on("checked", (ev) => {
-                // ev.preventDefault();  
+                // ev.preventDefault();
                 ev.stopImmediatePropagation();
                 this.emit(new CheckedEvent("checked", this, { RadioButton: lrb, Checked: ev.detail.Checked })); // eslint-disable-line jsdoc/require-jsdoc
             });

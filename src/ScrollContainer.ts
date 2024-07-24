@@ -9,7 +9,7 @@ import { Div } from "@vanilla-ts/dom";
  * therefore not be included in the scrollable area. If, for example, a component with a toolbar and
  * an underlying content area should have both elements (i.e. toolbar _and_ content area) in the
  * ScrollContainer, then the vertical scroll bar should not actually cover the toolbar.
- * 
+ *
  * Such an adjustment can be made with an object of the type `ScrollbarAdjustment`. 'Offset' stands
  * for the distance of the scroll bar (left or top) and 'ReduceSize' for a reduction in the width or
  * height of the scroll bar. Both values can be specified numerically or as a component. A numerical
@@ -23,9 +23,9 @@ export type ScrollbarAdjustment = { Offset: number | INodeComponent<HTMLElement>
 /**
  * Container with scroll bars. This component enables a uniform design of scroll bars across all
  * platforms/UAs. The design and behavior of the scroll bars is based on the scroll bars of macOS.
- * 
+ *
  * Usage notes:
- * 
+ *
  * - Although it may seem that `ScrollContainer` is a simple replacement for `Div` components (it
  *   implements `IChildren` like `Div`), this is not the case (see following points).
  * - Due to the internal component tree, some CSS adjustments may be necessary compared to a normal

@@ -7,7 +7,7 @@ import { LabelAlignment, LabeledComponent, LabelPosition } from "./LabeledCompon
  * LabeledContainer component.
  *
  * Usage notes:
- * 
+ *
  * - Although it may seem that `LabeledContainer` is a simple replacement for `Div` components (it
  *   implements `IChildren` like `Div`), this is not the case (see following points).
  * - Using `Container` or `Component` to add/remove/... components isn't wrong but unnecessary,

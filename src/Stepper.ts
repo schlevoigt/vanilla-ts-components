@@ -3,8 +3,8 @@ import { Button, Div } from "@vanilla-ts/dom";
 
 
 /**
- * Interface that must be implemented by objects in order to enable stepping/navigation in an object
- * with an instance of `Stepper`.
+ * Interface that must be implemented in order to enable stepping/navigation in bjects that
+ * implement `IStepper`.
  */
 export interface ISteppable {
     /**
@@ -20,10 +20,83 @@ export interface ISteppable {
     /**
      * Number of elements to step backwards/forwards on step-by-page operations. Implementors can
      * return `-1` if no page-by-page stepping is or should be supported. A call to `Backward()` or
-     * `Forward()` on an instance of `Stepper then has no effect. `PageSize` must also be an integer
-     * value!
+     * `Forward()` on an instance of `IStepper then has no effect. `PageSize` must also be an
+     * integer value!
      */
     PageSize: number;
+}
+
+/**
+ * Interface that allows to step forward/backward in objects that implement `ISteppable`.
+ */
+export interface IStepper {
+    /**
+     * Go to index/position `0` of the steppable object.
+     * @returns `true` if no event handler has cancelled the `step` event and the index/position in
+     * the steppable object is set to `0` after stepping, otherwise `false`. `false` is also
+     * returned, if `Count` of the steppable object is `0`.\
+     * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
+     * wouldn't change its value.
+     */
+    First(): boolean;
+
+    /**
+     * Go backward one 'page' in the steppable object.
+     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * in the steppable object is set to `Index - PageSize` or `0` after stepping, otherwise
+     * `false`. `false` is also returned if the property `PageSize` in the steppable object is `-1`
+     * (the object doesn't support paging) or if `Count` of the steppable object is `0`.\
+     * __Notes:__
+     * - The setter `Index` on the steppable object must never be called, if the operation wouldn't
+     *   change its value.
+     * - If `PageSize` is greater than or equal to the current distance to `0`, `Index` will be set
+     *   to `0`.
+     */
+    PageBackward(): boolean;
+
+    /**
+     * Go backward one position in the steppable object.
+     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * in the steppable object is set to `Index - 1` after stepping, otherwise `false`. `false` is
+     * also returned, if `Count` of the steppable object is `0`.\
+     * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
+     * wouldn't change its value.
+     */
+    Backward(): boolean;
+
+    /**
+     * Go forward one position in the steppable object.
+     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * in the steppable object is set to `Index + 1` after stepping, otherwise `false`. `false` is
+     * also returned, if `Count` of the steppable object is `0`.\
+     * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
+     * wouldn't change its value.
+     */
+    Forward(): boolean;
+
+    /**
+     * Go forward one 'page' in the steppable object.
+     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
+     * in the steppable object is set to `Index - PageSize` or `Count - 1` after stepping, otherwise
+     * `false`. `false` is also returned if the property `PageSize` in the steppable object is `-1`
+     * (the object doesn't support paging) or if `Count` of the steppable object is `0`.\
+     * __Notes:__
+     * - The setter `Index` on the steppable object must never be called, if the operation wouldn't
+     *   change its value.
+     * - If `PageSize` is greater than or equal to the current distance to `Count - 1`,
+     *   `Index` will be set to `Count - 1`.
+     */
+    PageForward(): boolean;
+
+    /**
+     * Go to index/position `Count - 1` of the steppable object.
+     * @returns `true` if no event handler has cancelled the `step` event and the index/position in
+     * the steppable object is set to `Count - 1` after stepping, otherwise `false`. `false` is also
+     * returned, if `Count` of the steppable object is `0`.\
+     * __Note:__ The setter `Index` on the steppable object must never be called, if the operation
+     * wouldn't change its value.
+     */
+    Last(): boolean;
 }
 
 /**
@@ -52,11 +125,11 @@ export enum StepperAppearance {
  * `Stepper` options.
  */
 export type StepperOptions = {
-    /** Apperance of the stepper. */
-    Apperance?: StepperAppearance;
-    /** 
+    /** Appearance of the stepper. */
+    Appearance?: StepperAppearance;
+    /**
      * If `true`, buttons that cannot be used (e.g. the `First` button with `Index === 0`) are
-     * hidden (`visibility: hidden;`) instead of just deactivated. 
+     * hidden (`visibility: hidden;`) instead of just deactivated.
      */
     HideButtons?: boolean;
     /** Timings for a held down pointer/mouse button. */
@@ -65,7 +138,7 @@ export type StepperOptions = {
     First?: boolean;
     /** Tooltip for button 'First'. Default: `undefined`. */
     FirstTitle?: string;
-    /** Show button 'Page back'? Default: `false`. */
+    /** Show button 'Page back'? Default: `true`. */
     PageBackward?: boolean;
     /** Support for holding the pointer down on 'Page backward'? */
     PageBackwardContinuous?: boolean;
@@ -83,7 +156,7 @@ export type StepperOptions = {
     ForwardContinuous?: boolean;
     /** Tooltip for button 'Forward'. Default: `undefined`. */
     ForwardTitle?: string;
-    /** Show button 'Page forward'? Default: `false`. */
+    /** Show button 'Page forward'? Default: `true`. */
     PageForward?: boolean;
     /** Support for holding the pointer down on 'Page forward'? */
     PageForwardContinuous?: boolean;
@@ -96,7 +169,7 @@ export type StepperOptions = {
 };
 
 /**
- * Custom 'step' event for steppers.
+ * Custom 'step' event for objects implementing `IStepper`.
  */
 export class StepEvent extends ACustomComponentEvent<"step", Stepper, {
     /** The new index/position in the steppable object. */
@@ -115,10 +188,10 @@ export class StepEvent extends ACustomComponentEvent<"step", Stepper, {
 }
 
 /**
- * Additional event(s) for `Stepper`.
+ * Additional event(s) for objects implementing `IStepper`.
  */
 export interface StepperEventMap extends HTMLElementEventMap {
-    /** 
+    /**
      * The stepper wants to go to a new index/position in the steppable object. Event handlers can
      * prevent changing the index/position by calling `preventDefault()`.
      */
@@ -126,9 +199,9 @@ export interface StepperEventMap extends HTMLElementEventMap {
 }
 
 /**
- * Stepper component.
+ * Stepper component with configurable buttons for stepping through an instance of `ISteppable`.
  */
-export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends AElementComponentWithInternalUI<Div, EventMap> {
+export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends AElementComponentWithInternalUI<Div, EventMap> implements IStepper {
     protected steppable: ISteppable;
     protected opts: StepperOptions;
     protected btnFirst: Button;
@@ -181,13 +254,13 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
     public options(options: StepperOptions) {
         this.opts = {
             /* eslint-disable jsdoc/require-jsdoc */
-            Apperance: options.Apperance ?? StepperAppearance.HORIZONTAL,
+            Appearance: options.Appearance ?? StepperAppearance.HORIZONTAL,
             HideButtons: options.HideButtons ?? false,
             // Leeres Objekt verwendet Default-Einstellung aus `Control.ts`.
             // Continuous: options.Continuous ?? {},
             First: options.First ?? true,
             FirstTitle: options.FirstTitle,
-            PageBackward: options.PageBackward ?? false,
+            PageBackward: options.PageBackward ?? true,
             PageBackwardContinuous: options.PageBackwardContinuous ?? false,
             PageBackwardTitle: options.PageBackwardTitle,
             Backward: options.Backward ?? true,
@@ -196,7 +269,7 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
             Forward: options.Forward ?? true,
             ForwardContinuous: options.ForwardContinuous ?? true,
             ForwardTitle: options.ForwardTitle,
-            PageForward: options.PageForward ?? false,
+            PageForward: options.PageForward ?? true,
             PageForwardContinuous: options.PageForwardContinuous ?? false,
             PageForwardTitle: options.PageForwardTitle,
             Last: options.Last ?? true,
@@ -226,7 +299,7 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
         this.opts.Last ? buttons.push(this.btnLast) : undefined;
         this.btnLast.Title = this.opts.LastTitle ?? null;
         this.ui.append(...buttons);
-        this.appearance(this.opts.Apperance!);
+        this.appearance(this.opts.Appearance!);
         this.updateButtons(this.steppable.Index, this.steppable.Count);
         return this;
     }
@@ -235,7 +308,7 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
      * Get/set the appearance of the stepper.
      */
     public get Appearance(): StepperAppearance {
-        return this.opts.Apperance!;
+        return this.opts.Appearance!;
     }
     /** @inheritdoc */
     public set Appearance(v: StepperAppearance) {
@@ -248,7 +321,7 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
      * @returns This instance.
      */
     public appearance(appearance: StepperAppearance): this {
-        this.opts.Apperance = appearance;
+        this.opts.Appearance = appearance;
         this.ui.removeClass("horizontal", "horizontal-alt", "vertical", "vertical-alt");
         switch (appearance) {
             case StepperAppearance.HORIZONTAL_ALT:
@@ -346,32 +419,14 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
         ];
     }
 
-    /**
-     * Go to index/position `0` of the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and the index/position in
-     * the steppable object is set to `0` after stepping, otherwise `false`. `false` is also
-     * returned, if `Count` of the steppable object is `0`.\
-     * __Note:__ The setter `Index` on the steppable object is never called, if the operation
-     * wouldn't change its value.
-     */
+    /** @inheritdoc */
     public First(): boolean {
         return this.dispatch(new StepEvent(this, 0))
             ? this.internalSetIndex(0)
             : false;
     }
 
-    /**
-     * Go backward one 'page' in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
-     * in the steppable object is set to `Index - PageSize` or `0` after stepping, otherwise
-     * `false`. `false` is also returned if the property `PageSize` in the steppable object is `-1`
-     * (the object doesn't support paging) or if `Count` of the steppable object is `0`.\
-     * __Notes:__
-     * - The setter `Index` on the steppable object is never called, if the operation wouldn't
-     *   change its value.
-     * - If `PageSize` is greater than or equal to the current distance to `0`, `Index` will be set
-     *   to `0`.
-     */
+    /** @inheritdoc */
     public PageBackward(): boolean {
         const pageSize = Math.trunc(this.steppable.PageSize);
         if (pageSize === -1) {
@@ -382,46 +437,21 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
             : false;
     }
 
-    /**
-     * Go backward one position in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
-     * in the steppable object is set to `Index - 1` after stepping, otherwise `false`. `false` is
-     * also returned, if `Count` of the steppable object is `0`.\
-     * __Note:__ The setter `Index` on the steppable object is never called, if the operation
-     * wouldn't change its value.
-     */
+    /** @inheritdoc */
     public Backward(): boolean {
         return this.dispatch(new StepEvent(this, this.adjustIndex(this.steppable.Index - 1)))
             ? this.internalSetIndex(this.steppable.Index - 1)
             : false;
     }
 
-    /**
-     * Go forward one position in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
-     * in the steppable object is set to `Index + 1` after stepping, otherwise `false`. `false` is
-     * also returned, if `Count` of the steppable object is `0`.\
-     * __Note:__ The setter `Index` on the steppable object is never called, if the operation
-     * wouldn't change its value.
-     */
+    /** @inheritdoc */
     public Forward(): boolean {
         return this.dispatch(new StepEvent(this, this.adjustIndex(this.steppable.Index + 1)))
             ? this.internalSetIndex(this.steppable.Index + 1)
             : false;
     }
 
-    /**
-     * Go forward one 'page' in the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and if the index/position
-     * in the steppable object is set to `Index - PageSize` or `Count - 1` after stepping, otherwise
-     * `false`. `false` is also returned if the property `PageSize` in the steppable object is `-1`
-     * (the object doesn't support paging) or if `Count` of the steppable object is `0`.\
-     * __Notes:__
-     * - The setter `Index` on the steppable object is never called, if the operation wouldn't
-     *   change its value.
-     * - If `PageSize` is greater than or equal to the current distance to `Count - 1`,
-     *   `Index` will be set to `Count - 1`.
-     */
+    /** @inheritdoc */
     public PageForward(): boolean {
         const pageSize = Math.trunc(this.steppable.PageSize);
         if (pageSize === -1) {
@@ -432,14 +462,7 @@ export class Stepper<EventMap extends StepperEventMap = StepperEventMap> extends
             : false;
     }
 
-    /**
-     * Go to index/position `Count - 1` of the steppable object.
-     * @returns `true` if no event handler has cancelled the `step` event and the index/position in
-     * the steppable object is set to `Count - 1` after stepping, otherwise `false`. `false` is also
-     * returned, if `Count` of the steppable object is `0`.\
-     * __Note:__ The setter `Index` on the steppable object is never called, if the operation
-     * wouldn't change its value.
-     */
+    /** @inheritdoc */
     public Last(): boolean {
         return this.dispatch(new StepEvent(this, this.adjustIndex(this.steppable.Count - 1)))
             ? this.internalSetIndex(this.steppable.Count - 1)

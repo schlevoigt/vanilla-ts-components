@@ -38,7 +38,7 @@ export class LabeledCheckbox<EventMap extends LabeledCheckboxEventMap = LabeledC
         this.component = new Checkbox(id, value, name)
             // Forward this event to make handling of the component easier.
             .on("checked", (ev) => {
-                // ev.preventDefault();  
+                // ev.preventDefault();
                 ev.stopImmediatePropagation();
                 this.emit(new CheckedEvent("checked", this, { Checked: ev.detail.Checked })); // eslint-disable-line jsdoc/require-jsdoc
             });

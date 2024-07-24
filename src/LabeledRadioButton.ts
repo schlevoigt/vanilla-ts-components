@@ -38,7 +38,7 @@ export class LabeledRadioButton<EventMap extends LabeledRadioButtonEventMap = La
         this.component = new RadioButton(id, value, name)
             // Forward this event to make handling of the component easier.
             .on("checked", (ev) => {
-                // ev.preventDefault();  
+                // ev.preventDefault();
                 ev.stopImmediatePropagation();
                 this.emit(new CheckedEvent("checked", this, { Checked: ev.detail.Checked })); // eslint-disable-line jsdoc/require-jsdoc
             });
