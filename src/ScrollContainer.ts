@@ -352,7 +352,7 @@ export class ScrollContainer<EventMap extends HTMLElementEventMap = HTMLElementE
     }
 
     /**
-     * Removes _and disposes_ all regular children from the scroll container.
+     * Removes _and disposes_ of all regular children from the scroll container.
      * @returns This instance.
      */
     public clearContent(): this {

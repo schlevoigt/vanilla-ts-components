@@ -41,7 +41,7 @@ export class LabeledContainer<EventMap extends HTMLElementEventMap = HTMLElement
     }
 
     /**
-     * Removes _and disposes_ all children from the labeled container (except the label).
+     * Removes _and disposes_ of all children from the labeled container (except the label).
      * @returns This instance.
      */
     public clearContent(): this {

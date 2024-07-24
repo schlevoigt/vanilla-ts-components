@@ -60,11 +60,33 @@ export class TabEvent extends ACustomComponentEvent<"tab", TabGroup, {
 }
 
 /**
+ * Custom 'tab-close' event for tab groups.
+ */
+export class TabCloseEvent extends ACustomComponentEvent<"tab-close", TabGroup, {
+    /** The tab which was closed (and disposed!). */
+    Tab: Tab;
+}> {
+    /**
+     * Create `tab-close` event.
+     * @param sender The event emitter (always `TabGroup`).
+     * @param tab The tab which is to be closed (and then disposed!).\
+     * __Important note:__ This event can't be cancelled and the tab will be disposed of immediately
+     * after the event has been dispatched to all listeners!
+     * @param customEventInitDict Optional event properties.
+     */
+    constructor(sender: TabGroup, tab: Tab, customEventInitDict: EventInit = DEFAULT_EVENT_INIT_DICT) {
+        super("tab-close", sender, { Tab: tab }, customEventInitDict); // eslint-disable-line jsdoc/require-jsdoc
+    }
+}
+
+/**
  * Additional event(s) for `Tab`.
  */
 export interface TabGroupEventMap extends HTMLElementEventMap {
     /** A `tab` event occured (on activation/deactivation). */
     "tab": TabEvent;
+    /** A `tab` event occured (on activation/deactivation). */
+    "tab-close": TabCloseEvent;
 }
 
 /**
@@ -133,7 +155,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
         }
         for (const tab of this.tabs) {
             if (tab.Active) {
-                this.emit(new TabEvent(this, tab, false)); // eslint-disable-line jsdoc/require-jsdoc
+                this.emit(new TabEvent(this, tab, false));
             }
         }
         this.activeTab = tab;
@@ -142,7 +164,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
             : undefined;
         this.tabContent.remove();
         this.tabContent.append(tab.Content);
-        this.emit(new TabEvent(this, tab, true)); // eslint-disable-line jsdoc/require-jsdoc
+        this.emit(new TabEvent(this, tab, true));
         return this;
     }
 
@@ -273,7 +295,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
      * @returns `true`, if the tab was closed, `false`, if the tab wasn't closed. It is impossible
      * for the caller to determine why a tab was _not_ closed, so the class `TabGroup` can/should be
      * overridden if more detailed checks are required. __Note:__ A tab that was closed by calling
-     * `requestCloseTab` will also be disposed! If this isn't the desired behavior, `remove()` or
+     * `requestCloseTab` will also be disposed of! If this isn't the desired behavior, `remove()` or
      * `extract()` must be used.
      */
     public requestCloseTab(tab: Tab): boolean {
@@ -282,6 +304,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
             return false;
         }
         const wasActive = this.tabs[index] === this.activeTab;
+        this.emit(new TabCloseEvent(this, tab));
         this.remove(tab);
         tab.dispose();
         wasActive
@@ -370,7 +393,7 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
     /**
      * Removes tabs from this tab group.
      * @param tabs The tabs to be removed. If the length of `tabs` is `0`, _all_ tabs are removed
-     * (but not disposed). Any element of `tabs`, that isn't a tab of this tab group, is ignored. 
+     * (but not disposed of). Any element of `tabs`, that isn't a tab of this tab group, is ignored. 
      * @returns This instance.
      */
     public remove(...tabs: Tab[]): this {
@@ -530,8 +553,8 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
 
     /**
      * Removes _all_ child components from the tab group and this component (`this.ui`). All removed
-     * components are also disposed. Removal/disposal also includes every tab, so if the content of
-     * tabs or the tabs themselves have to be preserved, tabs must be extracted or removed before
+     * components are also disposed of. Removal/disposal also includes every tab, so if the content
+     * of tabs or the tabs themselves have to be preserved, tabs must be extracted or removed before
      * calling `clear()`.
      * @see `AElementComponentWithChildren.clear()`.
      * @returns This instance.
@@ -864,8 +887,8 @@ export class Tab<EventMap extends HTMLElementEventMap = HTMLElementEventMap> ext
     }
 
     /**
-     * Removes _and_ disposes _all_ child components from the content container and this component
-     * (`this.ui`).
+     * Removes _and_ disposes of _all_ child components from the content container and this
+     * component (`this.ui`).
      * @returns This instance.
      */
     public override clear(): this {
