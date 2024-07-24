@@ -1,4 +1,4 @@
-.vts-labeled-select {
+.vts-labeled-temporal-input {
     display: flex;
     position: relative;
     margin-block: 0.25rem;
@@ -8,10 +8,9 @@
         margin: 0;
         background-color: inherit;
     }
-    > select {
+    > input {
         margin: 0;
         padding: 0;
-        width: fit-content;
     }
     /* #region start/end */
     &.p-start,

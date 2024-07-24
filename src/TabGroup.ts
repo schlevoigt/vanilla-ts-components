@@ -33,9 +33,9 @@ class TabGroupUI extends Div {
  */
 export enum TabGroupAppearance {
     TOP = 0,
-    RIGHT,
+    END,
     BOTTOM,
-    LEFT,
+    START,
 }
 
 /**
@@ -165,20 +165,20 @@ export class TabGroup<EventMap extends TabGroupEventMap = TabGroupEventMap> exte
     public appearance(appearance: TabGroupAppearance): this {
         if (this._appearance !== appearance) {
             this._appearance = appearance;
-            this.ui.removeClass("top", "right", "bottom", "left");
+            this.ui.removeClass("top", "end", "bottom", "start");
             let clazz: string;
             switch (this._appearance) {
                 case TabGroupAppearance.TOP:
                     clazz = "top";
                     break;
-                case TabGroupAppearance.RIGHT:
-                    clazz = "right";
+                case TabGroupAppearance.END:
+                    clazz = "end";
                     break;
                 case TabGroupAppearance.BOTTOM:
                     clazz = "bottom";
                     break;
-                case TabGroupAppearance.LEFT:
-                    clazz = "left";
+                case TabGroupAppearance.START:
+                    clazz = "start";
                     break;
             }
             this.ui.addClass(clazz);

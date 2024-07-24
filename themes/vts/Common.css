@@ -20,19 +20,31 @@ button {
     color: var(--font-color);
 }
 input,
-select {
+select,
+textarea {
     cursor: auto;
     background-color: var(--input-background-color);
     color: var(--font-color);
-    border: var(--1px) solid var(--input-border-color);
-    border-bottom: var(--1px) solid var(--input-border-color-dark);
-    border-radius: var(--2px);
     &:focus-visible {
         outline: var(--4px) solid var(--input-focused-outline-color);
         @media (prefers-reduced-motion: no-preference) {
             animation: outline-bounce .2s;
         }
     }
+}
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="week"],
+input[type="month"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="text"],
+select,
+textarea {
+    border: var(--1px) solid var(--input-border-color);
+    border-bottom: var(--1px) solid var(--input-border-color-dark);
+    border-radius: var(--2px);
 }
 @keyframes outline-bounce {
     0% {
@@ -50,4 +62,9 @@ select {
         outline-width: var(--4px);
         outline-offset: 0;
     }
+}
+hr {
+    border: none;
+    height: var(--1px);
+    background-color: var(--border-color);
 }

@@ -1,4 +1,4 @@
-.vts-labeled-select {
+.vts-labeled-text-area {
     display: flex;
     position: relative;
     margin-block: 0.25rem;
@@ -8,16 +8,15 @@
         margin: 0;
         background-color: inherit;
     }
-    > select {
+    > textarea {
         margin: 0;
         padding: 0;
-        width: fit-content;
     }
     /* #region start/end */
     &.p-start,
     &.p-end {
         flex-direction: row;
-        align-items: center;
+        align-items: flex-start;
     }
     &.p-start > label {
         margin-inline-end: 0.5rem;

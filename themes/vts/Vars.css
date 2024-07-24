@@ -7,13 +7,13 @@
     --font-color: hsl(0 0% 15.7%);
     /* #endregion */
 
-    /* #region Sizes */
-    /* console.log(parseFloat(getComputedStyle(document.documentElement).fontSize)); */
-    /* 0.06833rem ~ 1 Pixel at a font-size of 11pt */
-    /* 3.8804mm ~ 11pt; */
+    /* #region Sizes
+       console.log(parseFloat(getComputedStyle(document.documentElement).fontSize));
+       0.075rem ~ 1 Pixel at a font-size of 10pt.
+       3.52777...mm ~10pt. */
     --base-size: 1rem;
     --base-size-half: 0.5rem;
-    --1px: 0.06833rem;
+    --1px: 0.075rem;
     --2px: calc(2 * var(--1px));
     --3px: calc(3 * var(--1px));
     --4px: calc(4 * var(--1px));
@@ -38,7 +38,9 @@
     /* #region Colors */
     --window-background-color: hsl(0 0% 100%);
     --dialog-background-color: hsl(0 0% 96.5%);
-    --panel-background-color: hsl(0 0% 94.9%);
+    --panel-background-color-light: hsl(0 0% 94.9%);
+    --panel-background-color: hsl(0 0% 91.4%);
+    --panel-background-color-dark: hsl(0 0% 83%);
     --border-color: hsl(0 0% 89.8%);
     --border-color-dark: hsl(0 0% 86.7%);
     --input-background-color: hsl(0 0% 100%);
